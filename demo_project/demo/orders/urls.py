@@ -2,6 +2,7 @@ from django.urls import include,path
 from orders import views
 from orders.views import *
 from django.conf.urls import url
+from django.contrib.auth.views import LoginView
 urlpatterns=[
   path('pbi/',
       views.AllPbis.as_view(),
@@ -18,4 +19,6 @@ urlpatterns=[
   path('pbi/<pk>/mod/delete',
       views.deletePbi,
       name='deletePbi'),
+  path('login/', LoginView.as_view(template_name='login.html'), name="login"),
+
 ]
