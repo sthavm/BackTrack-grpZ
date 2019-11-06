@@ -56,3 +56,11 @@ def deletePbi(request, pk):
     else:
         form=PbiForm(instance=trash)
     return render(request, 'delete.html',{'form':form})
+
+class mainPage(TemplateView):
+    template_name="main.html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pbiList = Pbi.objects.order_by('-priority')
+        context['pbi_list'] = pbiList
+        return context
