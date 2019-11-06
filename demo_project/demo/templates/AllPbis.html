@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+	<title>Project created by </title>
+  <link rel="stylesheet" href="{% static 'allpbi.css' %}",type="text/css">
+</head>
+
+
+
+
+<form>
+	<h1>All Pbis of Project:</h1>
+<ul>
+
+{% for p in pbi_list %}
+	<li>[<a class="btn btn-primary" href="./{{p.title}}">{{p.title}}</a>]
+		<p>{{p.description}}<p>
+		<p>Priority:{{p.priority}} and Esitimated Story Point:{{p.storyPt}}<p>
+	</li>
+	<hr>
+{% empty %}
+	<li> The Product Backlog is unpopulated.</li>
+{% endfor %}
+
+</ul>
+
+<input class="button" type="button" onclick="location.href='./createPbi'" value="Create"><br><br>
+
+</form>
+
+</html>
