@@ -10,6 +10,10 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth import login
 
 # Create your views here.
+
+class HomePage(TemplateView):
+    template_name = 'homepage.html'
+
 class AllPbis(TemplateView):
     template_name = "AllPbis.html"
     def get_context_data(self, **kwargs):
@@ -81,6 +85,9 @@ class mainPage(TemplateView):
 class SignUpView(TemplateView):
     template_name = 'registration/signup.html'
 
+class NoProjectView(TemplateView):
+    template_name = 'noproject.html'
+
 class ManagerSignUpView(CreateView):
     model = User
     form_class = ManagerSignUpForm
@@ -88,10 +95,10 @@ class ManagerSignUpView(CreateView):
     def get_context_data(self, **kwargs):
         kwargs['user_type'] = 'manager'
         return super().get_context_data(**kwargs)
-    #def form_valid(self, form):
-        #user = form.save()
-       # login(self.request, user)
-       # return redirect('')
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('/redir')
 
 
 class DevSignUpView(CreateView):
@@ -102,7 +109,25 @@ class DevSignUpView(CreateView):
         kwargs['user_type'] = 'dev'
         return super().get_context_data(**kwargs)
 
-   # def form_valid(self, form):
-     #   user = form.save()
-      #  login(self.request, user)
-      #  return redirect('teachers:quiz_change_list')
+    def form_valid(self, form):
+       user = form.save()
+       login(self.request, user)
+       return redirect('/redir')
+
+
+@login_required
+def redir(request):
+    isManager = request.user.is_manager
+    isDev = request.user.is_devteam
+    isProdOwn = request.user.is_prodown
+    if (isManager):
+        return redirect('/projects')
+    elif (isDev):
+        if (request.user.dev.project == None):
+            return redirect('noproject')
+        else:
+            projectID = request.user.dev.project.projectID
+            return redirect('<projectID>/main')
+    elif (isProdOwn):
+        projectID = request.user.prodowner.project.projectID
+        return redirect('<projectID>/main')
