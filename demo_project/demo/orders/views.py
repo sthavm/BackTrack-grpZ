@@ -60,7 +60,10 @@ def deletePbi(request, pk):
 class mainPage(TemplateView):
     template_name="main.html"
     def get_context_data(self, **kwargs):
+        projectID=self.kwargs['projectID']
         context = super().get_context_data(**kwargs)
-        pbiList = Pbi.objects.order_by('-priority')
+
+        pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
+
         context['pbi_list'] = pbiList
         return context
