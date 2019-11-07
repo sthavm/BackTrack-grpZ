@@ -49,19 +49,29 @@
                                 </header>
                                 <form>
                                 	<h2 class="tm-blue-text tm-section-title tm-margin-b-45">All Pbis of Project:</h2>
-                                <ul>
+                                  <table width=100% border="1">
+　                                          <tr>
+　                                    <td>Title</td>
+                                    　<td>Description</td>
+                                      <td>Priority</td>
+                                      <td>Status</td>
+                                      <td>Estimated StoryPt</td>
+                                    　</tr>
+                                    {% for p in pbi_list %}
+                                    <tr>
+                                      <td><a class="btn btn-primary" href="./{{p.title}}">{{p.title}}</a></td>
+                                      <td>{{p.description}}</td>
+                                      <td>{{p.priority}}</td>
+                                      <td>{{p.status}}</td>
+                                      <td>{{p.storyPt}}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                      <td colspan="3">There is no pbi in the project.</td>
+                                    </tr>
+                                    {% endfor %}
 
-                                {% for p in pbi_list %}
-                                	<li>[<a class="btn btn-primary" href="./{{p.title}}">{{p.title}}</a>]
-                                		<p>{{p.description}}<p>
-                                		<p>Priority:{{p.priority}} and Esitimated Story Point:{{p.storyPt}}<p>
-                                	</li>
-                                	<hr>
-                                {% empty %}
-                                	<li> The Product Backlog is unpopulated.</li>
-                                {% endfor %}
-
-                                </ul>
+                                  </table>
 
                                 <input class="button" type="button" onclick="location.href='./createPbi'" value="Create"><br><br>
 
@@ -77,7 +87,7 @@
                                         <header>
                                             <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Current View</h2>
                                         </header>
-                                        <table width=150% border="1">
+                                        <table width=100% border="1">
 　                                          <tr>
 　                                          <td>pbi</td>
                                           　<td>task - in progress</td>
@@ -85,7 +95,7 @@
                                           　</tr>
                                           {% for p in pbi_list %}
                                           <tr>
-                                            [<td>{{p.title}}</td>]
+                                            <td>{{p.title}}</td>
                                             <td></td>
                                             <td></td>
                                           </tr>
@@ -111,7 +121,7 @@
                                       <header>
                                           <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Full View</h2>
                                       </header>
-                                      <table width=150% border="1">
+                                      <table width=100% border="1">
                                         <tr>
                                       　  <td>pbi</td>
                                           <td>task - finished</td>
@@ -120,7 +130,7 @@
                                         　</tr>
                                         {% for p in pbi_list %}
                                         <tr>
-                                          [<td>{{p.title}}</td>]
+                                          <td>{{p.title}}</td>
                                           <td></td>
                                           <td></td>
                                           <td></td>
