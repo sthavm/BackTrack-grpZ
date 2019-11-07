@@ -50,11 +50,11 @@ def deletePbi(request, pk):
 
     trash=get_object_or_404(Pbi, pk=pk)
     if request.method=='POST':
-        form=PbiForm(request.POST,instance=trash)
+        form=PbiCreateForm(request.POST,instance=trash)
         trash.delete()
         return HttpResponseRedirect('/pbi')
     else:
-        form=PbiForm(instance=trash)
+        form=PbiCreateForm(instance=trash)
     return render(request, 'delete.html',{'form':form})
 
 class mainPage(TemplateView):
