@@ -20,7 +20,8 @@ urlpatterns=[
       views.deletePbi,
       name='deletePbi'),
   path('login/', LoginView.as_view(template_name='login.html'), name="login"),
-  path('main/',
+
+  path('<projectID>/main/',
       views.mainPage.as_view(),
       name='mainPage'),
 ]
