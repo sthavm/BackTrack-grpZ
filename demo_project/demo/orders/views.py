@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView
 from django.forms import ModelForm
-from .forms import PbiForm
+from .forms import *
 from .models import Pbi
 from django.http import HttpResponseRedirect
 
@@ -17,13 +17,13 @@ class AllPbis(TemplateView):
 
 def addPbi(request):
     if request.method == "POST":
-        form = PbiForm(request.POST)
+        form = PbiCreateForm(request.POST)
         if form.is_valid():
             newPbi = form.save(commit=False)
             newPbi.save()
             return HttpResponseRedirect('/pbi')
     else:
-        form = PbiForm()
+        form = PbiCreateForm()
     return render(request, 'CreatePbi.html',{'form':form})
 
 
@@ -40,7 +40,7 @@ class OnePbi(TemplateView):
 def modifyPbi(request, target=None):
     item  = Pbi.objects.filter(title=target).first()
     address='../'+target
-    form = PbiForm(request.POST or None, instance=item)
+    form = PbiModifyForm(request.POST or None, instance=item)
     if form.is_valid():
         form.save()
         return HttpResponseRedirect(address)

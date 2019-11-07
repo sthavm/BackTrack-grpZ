@@ -17,7 +17,7 @@ class User(models.Model):
 class Pbi(models.Model):
     title=models.CharField(max_length=200,primary_key=True)
     projectID=models.ForeignKey(Project, on_delete=models.CASCADE, default='A')
-    status=models.CharField(max_length=1)
+    status=models.CharField(max_length=20, default='NotYetStarted')
     description=models.CharField(max_length=2000)
     priority=models.DecimalField(max_digits=4,decimal_places=0)
     storyPt=models.DecimalField(max_digits=2,decimal_places=0)

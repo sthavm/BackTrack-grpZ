@@ -1,7 +1,11 @@
 from django.forms import ModelForm
 from .models import Pbi
 
-class PbiForm(ModelForm):
+class PbiCreateForm(ModelForm):
     class Meta:
         model = Pbi
-        exclude = ['projectID']
+        exclude = ['projectID','status']
+class PbiModifyForm(ModelForm):
+    class Meta:
+        model = Pbi
+        exclude = ['projectID','title']
