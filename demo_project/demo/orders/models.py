@@ -1,5 +1,6 @@
 from django.db import models
 from django.forms import ModelForm
+from django.contrib.auth.models import *
 
 # Create your models here.
 class Project(models.Model):
@@ -7,12 +8,19 @@ class Project(models.Model):
     def __str__(self):
         return self.projectID
 
-class User(models.Model):
-    userID=models.CharField(max_length=4,primary_key=True)
-    projectID=models.ForeignKey(Project,null=True, blank=True,on_delete=models.CASCADE)
-    right=models.CharField(max_length=3)
-    def __str__(self):
-        return self.userID
+class User(AbstractUser):
+    is_manager = models.BooleanField('manager status', default=False)
+    is_prodowner = models.BooleanField('product owner status', default=False)
+    is_devteam = models.BooleanField('development team member status', default=False)
+
+class ProductOwner(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    project = models.OneToOneField(Project,on_delete=models.CASCADE)
+
+class DevTeamMember(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    project = models.OneToOneField(Project, on_delete=models.CASCADE)
+
 
 class Pbi(models.Model):
     title=models.CharField(max_length=200,primary_key=True)

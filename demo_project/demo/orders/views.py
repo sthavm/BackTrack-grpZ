@@ -1,9 +1,13 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import TemplateView
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView, CreateView
 from django.forms import ModelForm
 from .forms import *
 from .models import Pbi
+from .decorators import *
 from django.http import HttpResponseRedirect
+from django.contrib.auth import login
 
 # Create your views here.
 class AllPbis(TemplateView):
@@ -14,7 +18,8 @@ class AllPbis(TemplateView):
         context['pbi_list'] = pbiList
         return context
 
-
+@login_required
+@prodowner_required
 def addPbi(request):
     if request.method == "POST":
         form = PbiCreateForm(request.POST)
@@ -37,6 +42,8 @@ class OnePbi(TemplateView):
         context['pbi']=Pbi_list.filter(title=target).first()
         return context
 
+@login_required
+@prodowner_required
 def modifyPbi(request, target=None):
     item  = Pbi.objects.filter(title=target).first()
     address='../'+target
@@ -46,6 +53,8 @@ def modifyPbi(request, target=None):
         return HttpResponseRedirect(address)
     return render(request, 'ModifyPbi.html', {'form':form})
 
+@login_required
+@prodowner_required
 def deletePbi(request, pk):
 
     trash=get_object_or_404(Pbi, pk=pk)
@@ -67,3 +76,33 @@ class mainPage(TemplateView):
 
         context['pbi_list'] = pbiList
         return context
+
+
+class SignUpView(TemplateView):
+    template_name = 'registration/signup.html'
+
+class ManagerSignUpView(CreateView):
+    model = User
+    form_class = ManagerSignUpForm
+    template_name = 'registration/signup_form.html'
+    def get_context_data(self, **kwargs):
+        kwargs['user_type'] = 'manager'
+        return super().get_context_data(**kwargs)
+    #def form_valid(self, form):
+        #user = form.save()
+       # login(self.request, user)
+       # return redirect('')
+
+
+class DevSignUpView(CreateView):
+    model = User
+    form_class = DevSignUpForm
+    template_name = 'registration/signup_form.html'
+    def get_context_data(self, **kwargs):
+        kwargs['user_type'] = 'dev'
+        return super().get_context_data(**kwargs)
+
+   # def form_valid(self, form):
+     #   user = form.save()
+      #  login(self.request, user)
+      #  return redirect('teachers:quiz_change_list')

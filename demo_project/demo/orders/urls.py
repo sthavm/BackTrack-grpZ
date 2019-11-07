@@ -19,8 +19,11 @@ urlpatterns=[
   path('pbi/<pk>/mod/delete',
       views.deletePbi,
       name='deletePbi'),
-  path('login/', LoginView.as_view(template_name='login.html'), name="login"),
-
+  #path('login/', LoginView.as_view(template_name='login.html'), name="login"),
+  path('accounts/', include('django.contrib.auth.urls')),
+  path('accounts/signup/', views.SignUpView.as_view(), name='signup'),
+  path('accounts/signup/manager/', views.ManagerSignUpView.as_view(), name='manager_signup'),
+  path('accounts/signup/dev/', views.DevSignUpView.as_view(), name='dev_signup'),
   path('<projectID>/main/',
       views.mainPage.as_view(),
       name='mainPage'),
