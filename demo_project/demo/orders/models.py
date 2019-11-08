@@ -21,7 +21,7 @@ class ProductOwner(models.Model):
 
 class DevTeamMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    project = models.OneToOneField(Project, on_delete=models.CASCADE, null=True)
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, null=True,blank=True)
 
 
 class Pbi(models.Model):
