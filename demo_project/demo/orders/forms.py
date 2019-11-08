@@ -6,7 +6,7 @@ from .models import *
 class PbiCreateForm(ModelForm):
     class Meta:
         model = Pbi
-        exclude = ['projectID','status']
+        exclude = ['projectID','status','sprints']
 class PbiModifyForm(ModelForm):
     class Meta:
         model = Pbi
@@ -16,6 +16,11 @@ class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
         fields = ['projectID']
+
+class CreateSprintForm(ModelForm):
+    class Meta:
+        model = Sprint
+        exclude = ['endDate','is_active','project']
 
 
 

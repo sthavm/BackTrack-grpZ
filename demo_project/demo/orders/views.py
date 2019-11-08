@@ -30,7 +30,6 @@ def addPbi(request,projectID):
         form = PbiCreateForm(request.POST)
         if form.is_valid():
             newPbi = form.save(commit=False)
-            newPbi.projectID=request.user.productowner.project
             newPbi.save()
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
@@ -65,9 +64,10 @@ class OnePbi(TemplateView):
 
     def get_context_data(self, **kwargs):
         target=self.kwargs['target']
+        projectID=self.kwargs['projectID']
         context=super().get_context_data(**kwargs)
         Pbi_list=Pbi.objects.all()
-        context['pbi']=Pbi_list.filter(title=target).first()
+        context['pbi']=Pbi_list.filter(title=target).filter(projectID=projectID).first()
         return context
 
 @login_required
@@ -147,6 +147,23 @@ class DevSignUpView(CreateView):
        user = form.save()
        login(self.request, user)
        return redirect('/redir')
+
+@login_required
+@prodowner_required
+def CreateSprint(request):
+    if request.method == "POST":
+        form = CreateSprintForm(request.POST)
+        if form.is_valid():
+            newSprint = form.save(commit=False)
+            newSprint.project=request.user.productowner.project
+            newSprint.setEndDate()
+            newSprint.is_active=True
+            newSprint.save() 
+            address='/'+projectID+'/main'
+            return HttpResponseRedirect(address)
+    else:
+        form = CreateSprintForm()
+    return render(request, 'CreateSprint.html',{'form':form})
 
 
 @login_required

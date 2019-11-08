@@ -39,4 +39,7 @@ urlpatterns=[
   path('<projectID>/main/',
       views.mainPage.as_view(),
       name='mainPage'),
+  path('<projectID>/main/createSprint',
+       views.CreateSprint,
+       name='CreateSprint')
 ]
