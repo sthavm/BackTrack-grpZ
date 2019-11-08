@@ -111,8 +111,14 @@ class mainPage(TemplateView):
         context = super().get_context_data(**kwargs)
 
         pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
-
-        context['pbi_list'] = pbiList
+        cumsumList=[]
+        cumsum=0
+        for i in range (len(pbiList)):
+            cumsum+=pbiList[len(pbiList)-1-i].storyPt
+            cumsumList.append(int(cumsum))
+        cumsumList.reverse()
+        zipped=zip(pbiList, cumsumList)
+        context['pbi_list'] = zipped
         return context
 
 
