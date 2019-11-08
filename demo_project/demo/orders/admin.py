@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(Project)
 admin.site.register(User)
 admin.site.register(Pbi)
+admin.site.register(DevTeamMember)

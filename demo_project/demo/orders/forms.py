@@ -1,4 +1,4 @@
-from django.forms import ModelForm
+from django.forms import ModelForm,forms
 from django.db import transaction
 from django.contrib.auth.forms import UserCreationForm
 from .models import *
@@ -46,4 +46,5 @@ class DevSignUpForm(UserCreationForm):
         user.is_devteam = True
         user.save()
         dev = DevTeamMember.objects.create(user=user)
+        dev.project=None
         return user
