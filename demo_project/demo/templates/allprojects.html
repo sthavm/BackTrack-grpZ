@@ -1,0 +1,8 @@
+<h1>Projects</h1>
+<ul>
+    {% for project in object_list %}
+    <li><a class="btn btn-primary" href="{{project.projectID}}/main">{{project.projectID}}</a></li>
+    {% empty %}
+    <li>No projects have been created yet</li>
+    {% endfor %}
+</ul>

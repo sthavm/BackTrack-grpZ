@@ -1,4 +1,4 @@
-from django.forms import ModelForm
+from django.forms import ModelForm,forms
 from django.db import transaction
 from django.contrib.auth.forms import UserCreationForm
 from .models import *
@@ -6,7 +6,7 @@ from .models import *
 class PbiCreateForm(ModelForm):
     class Meta:
         model = Pbi
-        exclude = ['projectID','status']
+        exclude = ['projectID','status','sprints']
 class PbiModifyForm(ModelForm):
     class Meta:
         model = Pbi
@@ -15,13 +15,12 @@ class PbiModifyForm(ModelForm):
 class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
-        fields = ['projectID']
-    def save(self,request):
-        user = request.user
-        user.is_devteam = False
-        user.is_prodowner = True
-        prodowner = ProductOwner.objects.create(user=user)
-        user.save()
+        exclude=[]
+
+class CreateSprintForm(ModelForm):
+    class Meta:
+        model = Sprint
+        exclude = ['endDate','is_active','project']
 
 
 
@@ -46,4 +45,5 @@ class DevSignUpForm(UserCreationForm):
         user.is_devteam = True
         user.save()
         dev = DevTeamMember.objects.create(user=user)
+        dev.project=None
         return user
