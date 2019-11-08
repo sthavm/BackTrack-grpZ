@@ -119,7 +119,7 @@ class DevSignUpView(CreateView):
 def redir(request):
     isManager = request.user.is_manager
     isDev = request.user.is_devteam
-    isProdOwn = request.user.is_prodown
+    isProdOwn = request.user.is_prodowner
     if (isManager):
         return redirect('/projects')
     elif (isDev):
