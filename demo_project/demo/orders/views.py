@@ -128,7 +128,9 @@ def redir(request):
             return redirect('/noproject')
         else:
             projectID = currentUser.devteammember.project.projectID
-            return redirect('<projectID>/main')
+            address='/'+projectID+'/main'
+            return redirect(address)
     elif (isProdOwn):
         projectID = currentUser.prodowner.project.projectID
-        return redirect('<projectID>/main')
+        address='/'+projectID+'/main'
+        return redirect(address)
