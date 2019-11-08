@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, ListView
 from django.forms import ModelForm
 from .forms import *
 from .models import Pbi
@@ -34,6 +34,24 @@ def addPbi(request):
     else:
         form = PbiCreateForm()
     return render(request, 'CreatePbi.html',{'form':form})
+
+@login_required
+@dev_required
+def createProject(request):
+    if request.method == "POST":
+        form = CreateProjectForm(request.POST)
+        if form.is_valid():
+            newProject = form.save(commit=False)
+            newProject.save()
+            request.user.is_devteam = False
+            request.user.is_prodowner = True
+            productOwner = ProductOwner.objects.create(user=request.user)
+            productOwner.project = newProject
+            projectID = newProject.projectID
+            return HttpResponseRedirect('<projectID>/main')
+    else:
+        form = CreateProjectForm()
+    return render(request, 'CreateProject.html',{'form':form})
 
 
 class OnePbi(TemplateView):
@@ -69,6 +87,15 @@ def deletePbi(request, pk):
     else:
         form=PbiCreateForm(instance=trash)
     return render(request, 'delete.html',{'form':form})
+
+class AllProjects(ListView):
+    model = Project
+    template_name = "allprojects.html"
+    paginate_by = 10
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['now'] = timezone.now()
+        return context
 
 class mainPage(TemplateView):
     template_name="main.html"
@@ -128,9 +155,7 @@ def redir(request):
             return redirect('/noproject')
         else:
             projectID = currentUser.devteammember.project.projectID
-            address='/'+projectID+'/main'
-            return redirect(address)
+            return redirect('<projectID>/main')
     elif (isProdOwn):
-        projectID = currentUser.prodductowner.project.projectID
-        address='/'+projectID+'/main'
-        return redirect(address)
+        projectID = currentUser.prodowner.project.projectID
+        return redirect('<projectID>/main')
