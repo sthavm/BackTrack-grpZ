@@ -131,6 +131,6 @@ def redir(request):
             address='/'+projectID+'/main'
             return redirect(address)
     elif (isProdOwn):
-        projectID = currentUser.prodowner.project.projectID
+        projectID = currentUser.prodductowner.project.projectID
         address='/'+projectID+'/main'
         return redirect(address)
