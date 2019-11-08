@@ -14,14 +14,16 @@ class User(AbstractUser):
     is_manager = models.BooleanField('manager status', default=False)
     is_prodowner = models.BooleanField('product owner status', default=False)
     is_devteam = models.BooleanField('development team member status', default=False)
+    def __str__(self):
+        return self.username
 
 class ProductOwner(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    project = models.OneToOneField(Project,on_delete=models.CASCADE, null=True)
+    project = models.OneToOneField(Project,on_delete=models.SET_NULL, null=True)
 
 class DevTeamMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    project = models.OneToOneField(Project, on_delete=models.CASCADE, null=True,blank=True)
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
 
 
 class Pbi(models.Model):
