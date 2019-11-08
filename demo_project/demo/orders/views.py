@@ -47,8 +47,10 @@ def createProject(request):
             newProject.save()
             request.user.is_devteam = False
             request.user.is_prodowner = True
+            request.user.save()
             productOwner = ProductOwner.objects.create(user=request.user)
             productOwner.project = newProject
+            productOwner.save()
             projectID = newProject.projectID
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
