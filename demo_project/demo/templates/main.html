@@ -56,14 +56,16 @@
                                       <td>Priority</td>
                                       <td>Status</td>
                                       <td>Estimated StoryPt</td>
+                                      <td>Cumulated StoryPt</td>
                                     　</tr>
-                                    {% for p in pbi_list %}
+                                    {% for p, c in pbi_list %}
                                     <tr>
                                       <td><a class="btn btn-primary" href="{{p.title}}">{{p.title}}</a></td>
                                       <td>{{p.description}}</td>
                                       <td>{{p.priority}}</td>
                                       <td>{{p.status}}</td>
                                       <td>{{p.storyPt}}</td>
+                                      <td>{{c}}</td>
                                     </tr>
                                     {% empty %}
                                     <tr>
