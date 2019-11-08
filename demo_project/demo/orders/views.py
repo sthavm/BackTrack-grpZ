@@ -50,7 +50,8 @@ def createProject(request):
             productOwner = ProductOwner.objects.create(user=request.user)
             productOwner.project = newProject
             projectID = newProject.projectID
-            return HttpResponseRedirect('<projectID>/main')
+            address='/'+projectID+'/main'
+            return HttpResponseRedirect(address)
     else:
         form = CreateProjectForm()
     return render(request, 'CreateProject.html',{'form':form})
