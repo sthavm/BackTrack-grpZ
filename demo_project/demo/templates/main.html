@@ -4,11 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <script src="https://cdn.jsdelivr.net/npm/table-dragger@1.0.2/dist/table-dragger.min.js"></script>
     <title>BackTrack System</title>
 
     <!-- load stylesheets -->
-    <link rel="stylesheet" href="{% static 'bootstrap.min' %}">                                      <!-- Bootstrap style -->
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">                                      <!-- Bootstrap style -->
     <link rel="stylesheet" href="{% static 'magnific-popup.css' %}">                                <!-- Magnific pop up style, http://dimsemenov.com/plugins/magnific-popup/ -->
     <link rel="stylesheet" href="{% static 'main-style.css' %}">
 
@@ -27,13 +27,7 @@
                                     <a href="#productbacklog" class="tm-nav-item-link">Product Backlog</a>
                                 </li>
                                 <li class="tm-nav-item">
-                                    <a href="#currentview" class="tm-nav-item-link">Current View</a>
-                                </li>
-                                <li class="tm-nav-item">
-                                    <a href="#fullview" class="tm-nav-item-link">Full View</a>
-                                </li>
-                                <li class="tm-nav-item">
-                                    <a href="#burndown" class="tm-nav-item-link">Burndown Chart</a>
+                                    <a href="#sprintbacklog" class="tm-nav-item-link">Sprint Backlog</a>
                                 </li>
                             </ul>
                         </nav>
@@ -48,16 +42,26 @@
                                     <h1 class="tm-blue-text tm-welcome-title tm-margin-b-45">Product Backlog</h1>
                                 </header>
                                 <form>
-                                	<h2 class="tm-blue-text tm-section-title tm-margin-b-45">All Pbis of Project:</h2>
-                                  <table width=100% border="1">
-　                                          <tr>
-　                                    <td>Title</td>
-                                    　<td>Description</td>
-                                      <td>Priority</td>
-                                      <td>Status</td>
-                                      <td>Estimated StoryPt</td>
+                                  <label>STATUS: </label>
+                                  <select id="mylist" onchange="myFunction()" class='form-control'>
+                                  <option selected></option>
+                                  <option>FINISHED</option>
+                                  <option>IN PROGRESS</option>
+                                  <option>NOT YET STARTED</option>
+                                  </select>
+
+                                  <table id="myTable" width=100% border="1">
+                                      <thead>
+　                                    <tr>
+　                                    <th class='handle'>Title</th>
+                                    　<th class='handle'>Description</th>
+                                      <th class='handle'>Priority</th>
+                                      <th class='handle'>Status</th>
+                                      <th class='handle'>Estimated StoryPt</th>
                                     　</tr>
+                                  </thead>
                                     {% for p in pbi_list %}
+                                    <tbody>
                                     <tr>
                                       <td><a class="btn btn-primary" href="./{{p.title}}">{{p.title}}</a></td>
                                       <td>{{p.description}}</td>
@@ -65,14 +69,15 @@
                                       <td>{{p.status}}</td>
                                       <td>{{p.storyPt}}</td>
                                     </tr>
+                                  </tbody>
                                     {% empty %}
                                     <tr>
-                                      <td colspan="3">There is no pbi in the project.</td>
+                                      <td colspan="5">There is no pbi in the project.</td>
                                     </tr>
                                     {% endfor %}
 
                                   </table>
-
+                                  <br>
                                 <input class="button" type="button" onclick="location.href='./createPbi'" value="Create"><br><br>
 
                                 </form>
@@ -81,132 +86,44 @@
 
 
                             <!-- Current View section -->
-                            <section id="currentview" class="tm-section">
+                            <section id="sprintbacklog" class="tm-section">
                                 <div class="row">
                                     <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
                                         <header>
-                                            <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Current View</h2>
+                                            <h1 class="tm-blue-text tm-welcome-title tm-margin-b-45">Sprint Backlog</h1>
                                         </header>
-                                        <table width=100% border="1">
+                                        <table width=150% border="1">
 　                                          <tr>
-　                                          <td>pbi</td>
-                                          　<td>task - in progress</td>
-                                            <td>task - not yet started</td>
+　                                          <th>pbi</th>
+                                          　<th class="col1">task - in progress</th>
+                                            <th class="col2">task - not yet started</th>
+                                            <th class="col3">task - finished</th>
                                           　</tr>
                                           {% for p in pbi_list %}
                                           <tr>
                                             <td>{{p.title}}</td>
-                                            <td></td>
-                                            <td></td>
+                                            <td class="col1"></td>
+                                            <td class="col2"></td>
+                                            <td class="col3"></td>
                                           </tr>
                                           {% empty %}
                                           <tr>
-                                            <td colspan="3">There is no pbi in the project.</td>
+                                            <td colspan="4">There is no pbi in the project.</td>
                                           </tr>
                                           {% endfor %}
 
                                         </table>
                                         <br>
                                         <input class="button" type="button" onclick="location.href='./createtask'" value="Add task"><br><br>
+                                        <input type="button" id="hideCol1" value="Hide Finished" />
+                                        <input type="button" id="hideCol2" value="Hide In Progess" />
+                                        <input type="button" id="hideCol3" value="Hide Not Yet Started" />
+                                        <input type="button" id="showAll" value="ShowAll" />
                                     </div>
 
 
                                 </div>
                             </section>
-
-                            <!-- Full View section -->
-                            <section id="fullview" class="tm-section">
-                              <div class="row">
-                                  <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
-                                      <header>
-                                          <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Full View</h2>
-                                      </header>
-                                      <table width=100% border="1">
-                                        <tr>
-                                      　  <td>pbi</td>
-                                          <td>task - finished</td>
-                                        　<td>task - in progress</td>
-                                          <td>task - not yet started</td>
-                                        　</tr>
-                                        {% for p in pbi_list %}
-                                        <tr>
-                                          <td>{{p.title}}</td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                        </tr>
-                                        {% empty %}
-                                        <tr>
-                                          <td colspan="4">There is no pbi in the project.</td>
-                                        </tr>
-                                        {% endfor %}
-
-                                      </table>
-                                  </div>
-
-
-                              </div>
-                            </section>
-
-                            <!-- Burndown Chart section -->
-                            <section id="burndown" class="tm-section">
-                                <header><h2 class="tm-blue-text tm-welcome-title tm-margin-b-30">Burndown Chart</h2></header>
-                                <script>
-                                  window.onload = function() {
-
-                                    var chart = new CanvasJS.Chart("chartContainer", {
-                                      animationEnabled: true,
-                                      title: {
-                                        text: ""
-                                      },
-                                      axisX: {
-                                        title: "Days"
-                                      },
-                                      axisY: {
-                                      title: "Remaining Effort Hours",
-                                      },
-data: [{
-  type: "line",
-  name: "CPU Utilization",
-  connectNullData: true,
-  //nullDataLineDashType: "solid",
-  yValueFormatString: "#,##0.##\"%\"",
-  yValueFormatString: "#,##0.##\"%\"",
-  dataPoints: [
-    { x: 1, y: 35.939 },
-    { x: 2, y: 40.896 },
-    { x: 3, y: 56.625 },
-    { x: 4, y: 26.003 },
-    { x: 5, y: 20.376 },
-    { x: 6, y: 19.774 },
-    { x: 7, y: 23.508 },
-    { x: 8, y: 18.577 },
-    { x: 9, y: 15.918 },
-    { x: 10, y: null }, // Null Data
-    { x: 11, y: 10.314 },
-    { x: 12, y: 10.574 },
-    { x: 13, y: 14.422 },
-    { x: 14, y: 18.576 },
-    { x: 15, y: 22.342 },
-    { x: 16, y: 22.836 },
-    { x: 17, y: 23.220 },
-    { x: 18, y: 23.594 },
-    { x: 19, y: 24.596 },
-    { x: 20, y: 31.947 },
-    { x: 21, y: 31.142 }
-  ]
-}]
-});
-chart.render();
-
-}
-</script>
-</head>
-<body>
-<div id="chartContainer" style="height: 370px; width: 100%;"></div>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-                            </section>
-
 
                             <footer>
                                 <p class="tm-copyright-p">Copyright &copy; <span class="tm-current-year">2019</span> Zebra</p>
@@ -218,5 +135,85 @@ chart.render();
             </div> <!-- row -->
         </div> <!-- container -->
 
+        <script>
+
+          var el = document.getElementById('myTable');
+          var dragger = tableDragger(el,{
+           mode: 'row',
+          dragHandler: '',
+          onlyBody: true,
+          animation: 300
+          });
+
+          dragger.on('drop',function(from, to){
+          console(from);
+          console(to);
+          });
+
+        function myFunction() {
+          // Declare variables
+          var input, filter, table, tr, td, i, txtValue;
+          input = document.getElementById("mylist");
+          filter = input.value.toUpperCase();
+          table = document.getElementById("myTable");
+          tr = table.getElementsByTagName("tr");
+
+          // Loop through all table rows, and hide those who don't match the search query
+          for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[2];
+            if (td) {
+              txtValue = td.textContent || td.innerText;
+              if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+              } else {
+                tr[i].style.display = "none";
+              }
+            }
+          }
+        }
+
+        var hideCol1 = function () {
+            var e = document.getElementsByClassName("col1");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "none";
+            }
+        };
+
+        var hideCol2 = function () {
+            var e = document.getElementsByClassName("col2");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "none";
+            }
+        };
+        var hideCol3 = function () {
+          var e = document.getElementsByClassName("col3");
+          for (var i = 0; i < e.length; i++) {
+              e[i].style.display = "none";
+          }
+      };
+
+        var showAll = function () {
+            var e = document.getElementsByClassName("col1");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "table-cell";
+            };
+            e = document.getElementsByClassName("col2");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "table-cell";
+            };
+            e = document.getElementsByClassName("col3");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "table-cell";
+            };
+        };
+
+        (function () {
+            document.getElementById("hideCol1").addEventListener("click", hideCol1);
+            document.getElementById("hideCol2").addEventListener("click", hideCol2);
+            document.getElementById("hideCol3").addEventListener("click", hideCol3);
+            document.getElementById("showAll").addEventListener("click", showAll);
+        })();
+
+        </script>
 </body>
 </html>
