@@ -30,6 +30,7 @@ def addPbi(request,projectID):
         form = PbiCreateForm(request.POST)
         if form.is_valid():
             newPbi = form.save(commit=False)
+            newPbi.projectID=request.user.productowner.project
             newPbi.save()
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
