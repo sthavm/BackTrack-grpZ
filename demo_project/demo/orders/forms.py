@@ -16,12 +16,6 @@ class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
         fields = ['projectID']
-    def save(self,request):
-        user = request.user
-        user.is_devteam = False
-        user.is_prodowner = True
-        prodowner = ProductOwner.objects.create(user=user)
-        user.save()
 
 
 
