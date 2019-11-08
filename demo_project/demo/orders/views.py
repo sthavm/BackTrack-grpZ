@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, ListView
 from django.forms import ModelForm
 from .forms import *
-from .models import Pbi
+from .models import *
 from .decorators import *
 from django.http import HttpResponseRedirect
 from django.contrib.auth import login
@@ -14,6 +14,14 @@ from django.contrib.auth import login
 class HomePage(TemplateView):
     template_name = 'homepage.html'
 
+
+class AllPbis(TemplateView):
+    template_name = "AllPbis.html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pbiList = Pbi.objects.order_by('-priority')
+        context['pbi_list'] = pbiList
+        return context
 
 @login_required
 @prodowner_required
@@ -29,6 +37,24 @@ def addPbi(request,projectID):
         form = PbiCreateForm()
     return render(request, 'CreatePbi.html',{'form':form})
 
+@login_required
+@dev_required
+def createProject(request):
+    if request.method == "POST":
+        form = CreateProjectForm(request.POST)
+        if form.is_valid():
+            newProject = form.save(commit=False)
+            newProject.save()
+            request.user.is_devteam = False
+            request.user.is_prodowner = True
+            productOwner = ProductOwner.objects.create(user=request.user)
+            productOwner.project = newProject
+            projectID = newProject.projectID
+            return HttpResponseRedirect('<projectID>/main')
+    else:
+        form = CreateProjectForm()
+    return render(request, 'CreateProject.html',{'form':form})
+
 
 class OnePbi(TemplateView):
     template_name="OnePbi.html"
@@ -42,7 +68,7 @@ class OnePbi(TemplateView):
 
 @login_required
 @prodowner_required
-def modifyPbi(request, projectID,target=None):
+def modifyPbi(request, projectID, target=None):
     item  = Pbi.objects.filter(title=target).first()
     address='../'+target
     form = PbiModifyForm(request.POST or None, instance=item)
@@ -53,7 +79,7 @@ def modifyPbi(request, projectID,target=None):
 
 @login_required
 @prodowner_required
-def deletePbi(request, projectID,pk):
+def deletePbi(request,projectID, pk):
 
     trash=get_object_or_404(Pbi, pk=pk)
     if request.method=='POST':
@@ -64,6 +90,15 @@ def deletePbi(request, projectID,pk):
     else:
         form=PbiCreateForm(instance=trash)
     return render(request, 'delete.html',{'form':form})
+
+class AllProjects(ListView):
+    model = Project
+    template_name = "allprojects.html"
+    paginate_by = 10
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['now'] = timezone.now()
+        return context
 
 class mainPage(TemplateView):
     template_name="main.html"
