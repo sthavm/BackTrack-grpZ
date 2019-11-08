@@ -117,17 +117,18 @@ class DevSignUpView(CreateView):
 
 @login_required
 def redir(request):
-    isManager = request.user.is_manager
-    isDev = request.user.is_devteam
-    isProdOwn = request.user.is_prodowner
+    currentUser = request.user
+    isManager = currentUser.is_manager
+    isDev = currentUser.is_devteam
+    isProdOwn = currentUser.is_prodowner
     if (isManager):
         return redirect('/projects')
     elif (isDev):
-        if (request.user.dev.project == None):
-            return redirect('noproject')
+        if (currentUser.devteammember.project == None):
+            return redirect('/noproject')
         else:
-            projectID = request.user.dev.project.projectID
+            projectID = currentUser.devteammember.project.projectID
             return redirect('<projectID>/main')
     elif (isProdOwn):
-        projectID = request.user.prodowner.project.projectID
+        projectID = currentUser.prodowner.project.projectID
         return redirect('<projectID>/main')
