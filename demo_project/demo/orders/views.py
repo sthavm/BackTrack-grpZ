@@ -216,6 +216,7 @@ def CreateSprintLanding(request,projectID):
     
     if hasActiveSprint:
             address='/'+projectID+'/main'
+            messages.info(request, 'Project has Active Sprint already!')
             return HttpResponseRedirect(address)
     else:
         return HttpResponseRedirect('/'+projectID+'/main/createSprint')
@@ -227,15 +228,19 @@ def redir(request):
     isDev = currentUser.is_devteam
     isProdOwn = currentUser.is_prodowner
     if (isManager):
+        messages.info(request, 'You are a Manager!')
         return redirect('/projects')
     elif (isDev):
+        messages.info(request, 'You are a Developer!')
         if (currentUser.devteammember.project == None):
             return redirect('/noproject')
         else:
             projectID = currentUser.devteammember.project.projectID
             address='/'+projectID+'/main'
+            messages.info(request, 'You are a Developer!')
             return redirect(address)
     elif (isProdOwn):
         projectID = currentUser.productowner.project.projectID
         address='/'+projectID+'/main'
+        messages.info(request, 'You are a Product Owner!')
         return redirect(address)
