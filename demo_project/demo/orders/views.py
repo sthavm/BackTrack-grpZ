@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, CreateView, ListView
 from django.forms import ModelForm
@@ -30,6 +31,7 @@ def addPbi(request,projectID):
         form = PbiCreateForm(request.POST)
         if form.is_valid():
             newPbi = form.save(commit=False)
+            newPbi.projectID=request.user.productowner.project
             newPbi.save()
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
@@ -47,6 +49,7 @@ def createProject(request):
             newProject.save()
             request.user.is_devteam = False
             request.user.is_prodowner = True
+            request.user.is_available=False
             request.user.save()
             productOwner = ProductOwner.objects.create(user=request.user)
             productOwner.project = newProject
@@ -82,10 +85,20 @@ def modifyPbi(request, projectID, target=None):
     return render(request, 'ModifyPbi.html', {'form':form})
 
 @login_required
+def modifyTask(request, projectID, target=None):
+    item  = Task.objects.filter(title=target).first()
+    address='../'+target
+    form = TaskModifyForm(request.POST or None, instance=item)
+    if form.is_valid():
+        form.save()
+        return HttpResponseRedirect(address)
+    return render(request, 'ModifyTask.html', {'form':form})
+
+@login_required
 @prodowner_required
 def deletePbi(request,projectID, pk):
 
-    trash=get_object_or_404(Pbi, pk=pk)
+    trash=get_object_or_404(Pbi, title=pk)
     if request.method=='POST':
         form=PbiCreateForm(request.POST,instance=trash)
         trash.delete()
@@ -109,8 +122,9 @@ class mainPage(TemplateView):
     def get_context_data(self, **kwargs):
         projectID=self.kwargs['projectID']
         context = super().get_context_data(**kwargs)
-
+        project=Project.objects.filter(projectID=projectID).first()
         pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
+        sprintList=Sprint.objects.filter(project=projectID).order_by('sprintNumber')
         cumsumList=[]
         cumsum=0
         for i in range (len(pbiList)):
@@ -119,6 +133,8 @@ class mainPage(TemplateView):
         cumsumList.reverse()
         zipped=zip(pbiList, cumsumList)
         context['pbi_list'] = zipped
+        context['sprintList']=sprintList
+        context['project']=project
         return context
 
 
@@ -156,15 +172,37 @@ class DevSignUpView(CreateView):
 
 @login_required
 @prodowner_required
-def CreateSprint(request):
+def CreateSprint(request,projectID):
+    if hasActiveSprint(request.user.productowner.project):
+        messages.info(request, 'ALERT: There is already an active sprint in this project')
+        raise PermissionDenied()
+        address='/'+projectID+'/main'
+        return HttpResponseRedirect(address)
+    else:
+        if request.method == "POST":
+            form = CreateSprintForm(request.POST)
+            if form.is_valid():
+                newSprint = form.save(commit=False)
+                newSprint.project=request.user.productowner.project
+                newSprint.setEndDate()
+                newSprint.is_active=True
+                newSprint.save()
+                address='/'+projectID+'/main'
+                return HttpResponseRedirect(address)
+        else:
+            form = CreateSprintForm()
+        return render(request, 'CreateSprint.html',{'form':form})
+
+@login_required
+@dev_required
+def CreateTask(request,projectID):
     if request.method == "POST":
-        form = CreateSprintForm(request.POST)
+        form = CreateTaskForm(request.POST)
         if form.is_valid():
-            newSprint = form.save(commit=False)
-            newSprint.project=request.user.productowner.project
-            newSprint.setEndDate()
-            newSprint.is_active=True
-            newSprint.save() 
+            newTask = form.save(commit=False)
+            newTask.creator=request.user.developmentteammember
+            newTask.status='Not Started'
+            newTask.save()
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
     else:
@@ -191,3 +229,10 @@ def redir(request):
         projectID = currentUser.productowner.project.projectID
         address='/'+projectID+'/main'
         return redirect(address)
+
+def hasActiveSprint(Project):
+    sprints=Project.sprint_set.all()
+    for sprint in sprints:
+        if sprint.active == True:
+            return True
+    return False

@@ -22,13 +22,13 @@ urlpatterns=[
   path('<projectID>/main/createPbi',
       views.addPbi,
       name='Cre-Pbi'),
-  path('<projectID>/main/<target>/',
+  path('<projectID>/main/pbi/<target>/',
       views.OnePbi.as_view(),
       name='User-Pbi'),
-  path('<projectID>/main/<target>/mod',
+  path('<projectID>/main/pbi/<target>/mod',
       views.modifyPbi,
       name='Mod-Pbi'),
-  path('<projectID>/main/<pk>/mod/delete',
+  path('<projectID>/main/pbi/<pk>/mod/delete',
       views.deletePbi,
       name='deletePbi'),
   path('login/', LoginView.as_view(template_name='registration/login.html'), name="login"),
@@ -41,5 +41,9 @@ urlpatterns=[
       name='mainPage'),
   path('<projectID>/main/createSprint',
        views.CreateSprint,
-       name='CreateSprint')
+       name='CreateSprint'),
+  path('<projectID>/main/createTask',
+       views.CreateTask,
+       name='CreateTask'),
+
 ]

@@ -10,19 +10,27 @@ class PbiCreateForm(ModelForm):
 class PbiModifyForm(ModelForm):
     class Meta:
         model = Pbi
-        exclude = ['projectID','title']
+        exclude = ['projectID','title','sprints']
+
+class TaskModifyForm(ModelForm):
+    class Meta:
+        model = Task
+        exclude = ['pbi','creator']
 
 class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
-        fields = ['projectID']
+        exclude=[]
 
 class CreateSprintForm(ModelForm):
     class Meta:
         model = Sprint
         exclude = ['endDate','is_active','project']
 
-
+class CreateTaskForm(ModelForm):
+    class Meta:
+        model = Task
+        exclude = ['creator','status']
 
 class ManagerSignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
