@@ -112,9 +112,21 @@
                                         {% for s in sprintList %}
                                         <tr>
                                             <td>{{s.sprintNumber}}</td>
-                                            <td class="col1"></td>
-                                            <td class="col2"></td>
-                                            <td class="col3"></td>
+                                            <td>
+                                              {% for t in taskDone %}
+                                                <a class="btn btn-primary" href="./task/{{t.title}}/mod">{{t.title}}</a>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for t in taskProgress %}
+                                                <a class="btn btn-primary" href="./task/{{t.title}}/mod">{{t.title}}</a>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for t in taskNot %}
+                                                <a class="btn btn-primary" href="./task/{{t.title}}/mod">{{t.title}}</a>
+                                              {% endfor %}
+                                            </td>
                                         </tr>
                                         {% empty %}
                                         <tr>
@@ -124,8 +136,8 @@
 
                                     </table>
                                     <br>
-                                    <input class="button" type="button" onclick="location.href='./createSprint'" value="CreateSprint">
-                                    <input class="button" type="button" onclick="location.href='./createTask'" value="CreateTask"><br><br>
+                                    <input class="button" type="button" onclick="location.href='./createSprintLanding'" value="Create Sprint">
+                                    <input class="button" type="button" onclick="location.href='./createTask'" value="Create Task"><br><br>
                                     <input type="button" id="hideCol1" value="Hide Finished" />
                                     <input type="button" id="hideCol2" value="Hide In Progess" />
                                     <input type="button" id="hideCol3" value="Hide Not Yet Started" />

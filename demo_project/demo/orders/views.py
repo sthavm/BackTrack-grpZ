@@ -56,6 +56,7 @@ def createProject(request):
             productOwner.save()
             projectID = newProject.projectID
             address='/'+projectID+'/main'
+            messages.info(request, 'You now become a Product Owner!')
             return HttpResponseRedirect(address)
     else:
         form = CreateProjectForm()
@@ -87,7 +88,7 @@ def modifyPbi(request, projectID, target=None):
 @login_required
 def modifyTask(request, projectID, target=None):
     item  = Task.objects.filter(title=target).first()
-    address='../'+target
+    address='/'+projectID+'/main'
     form = TaskModifyForm(request.POST or None, instance=item)
     if form.is_valid():
         form.save()
@@ -125,6 +126,10 @@ class mainPage(TemplateView):
         project=Project.objects.filter(projectID=projectID).first()
         pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
         sprintList=Sprint.objects.filter(project=projectID).order_by('sprintNumber')
+        taskList=Task.objects.all()
+        taskDone=taskList.filter(status="Completed")
+        taskProgress=taskList.filter(status="In Progress")
+        taskNot=taskList.filter(status="Not Started")
         cumsumList=[]
         cumsum=0
         for i in range (len(pbiList)):
@@ -135,6 +140,10 @@ class mainPage(TemplateView):
         context['pbi_list'] = zipped
         context['sprintList']=sprintList
         context['project']=project
+        context['task']=taskList
+        context['taskDone']=taskDone
+        context['taskProgress']=taskProgress
+        context['taskNot']=taskNot
         return context
 
 
@@ -173,12 +182,6 @@ class DevSignUpView(CreateView):
 @login_required
 @prodowner_required
 def CreateSprint(request,projectID):
-    if hasActiveSprint(request.user.productowner.project):
-        messages.info(request, 'ALERT: There is already an active sprint in this project')
-        raise PermissionDenied()
-        address='/'+projectID+'/main'
-        return HttpResponseRedirect(address)
-    else:
         if request.method == "POST":
             form = CreateSprintForm(request.POST)
             if form.is_valid():
@@ -200,15 +203,35 @@ def CreateTask(request,projectID):
         form = CreateTaskForm(request.POST)
         if form.is_valid():
             newTask = form.save(commit=False)
-            newTask.creator=request.user.developmentteammember
+            newTask.creator=request.user.devteammember
             newTask.status='Not Started'
             newTask.save()
+            p=newTask.pbi
+            p.status='In Current Sprint'
+            p.save()
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
     else:
         form = CreateTaskForm()
     return render(request, 'CreateTask.html',{'form':form})
 
+def CreateSprintLanding(request,projectID):
+    sprints=request.user.productowner.project.sprint_set.all()
+    hasActiveSprint=False
+    for sprint in sprints:
+        sprint.active()
+        if sprint.is_active == True:
+            hasActiveSprint = True
+            break
+        else:
+            hasActiveSprint = False
+
+    if hasActiveSprint:
+            address='/'+projectID+'/main'
+            messages.info(request, 'Project has Active Sprint already!')
+            return HttpResponseRedirect(address)
+    else:
+        return HttpResponseRedirect('/'+projectID+'/main/createSprint')
 
 @login_required
 def redir(request):
@@ -217,22 +240,19 @@ def redir(request):
     isDev = currentUser.is_devteam
     isProdOwn = currentUser.is_prodowner
     if (isManager):
+        messages.info(request, 'You are a Manager!')
         return redirect('/projects')
     elif (isDev):
         if (currentUser.devteammember.project == None):
+            messages.info(request, 'You are a Developer!')
             return redirect('/noproject')
         else:
             projectID = currentUser.devteammember.project.projectID
             address='/'+projectID+'/main'
+            messages.info(request, 'You are a Developer!')
             return redirect(address)
     elif (isProdOwn):
         projectID = currentUser.productowner.project.projectID
         address='/'+projectID+'/main'
+        messages.info(request, 'You are a Product Owner!')
         return redirect(address)
-
-def hasActiveSprint(Project):
-    sprints=Project.sprint_set.all()
-    for sprint in sprints:
-        if sprint.active == True:
-            return True
-    return False

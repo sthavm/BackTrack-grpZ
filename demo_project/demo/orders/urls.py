@@ -39,11 +39,16 @@ urlpatterns=[
   path('<projectID>/main/',
       views.mainPage.as_view(),
       name='mainPage'),
+  path('<projectID>/main/createSprintLanding',
+       views.CreateSprintLanding,
+       name='CreateSprintLanding'),
   path('<projectID>/main/createSprint',
        views.CreateSprint,
        name='CreateSprint'),
   path('<projectID>/main/createTask',
        views.CreateTask,
        name='CreateTask'),
-
+  path('<projectID>/main/task/<target>/mod',
+        views.modifyTask,
+        name='modifyTask'),
 ]
