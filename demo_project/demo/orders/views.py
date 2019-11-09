@@ -206,8 +206,8 @@ def CreateTask(request,projectID):
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
     else:
-        form = CreateSprintForm()
-    return render(request, 'CreateSprint.html',{'form':form})
+        form = CreateTaskForm()
+    return render(request, 'CreateTask.html',{'form':form})
 
 
 @login_required
