@@ -176,6 +176,22 @@ def CreateSprint(request,projectID):
         form = CreateSprintForm()
     return render(request, 'CreateSprint.html',{'form':form})
 
+@login_required
+@dev_required
+def CreateTask(request,projectID):
+    if request.method == "POST":
+        form = CreateTaskForm(request.POST)
+        if form.is_valid():
+            newTask = form.save(commit=False)
+            newTask.creator=request.user.developmentteammember
+            newTask.status='Not Started'
+            newTask.save()
+            address='/'+projectID+'/main'
+            return HttpResponseRedirect(address)
+    else:
+        form = CreateSprintForm()
+    return render(request, 'CreateSprint.html',{'form':form})
+
 
 @login_required
 def redir(request):

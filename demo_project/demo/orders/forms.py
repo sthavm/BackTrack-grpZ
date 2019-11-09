@@ -22,7 +22,10 @@ class CreateSprintForm(ModelForm):
         model = Sprint
         exclude = ['endDate','is_active','project']
 
-
+class CreateTaskForm(ModelForm):
+    class Meta:
+        model = Task
+        exclude = ['creator','status']
 
 class ManagerSignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):

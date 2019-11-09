@@ -42,5 +42,8 @@ urlpatterns=[
   path('<projectID>/main/createSprint',
        views.CreateSprint,
        name='CreateSprint'),
+  path('<projectID>/main/createTask',
+       views.CreateTask,
+       name='CreateTask'),
 
 ]
