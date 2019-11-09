@@ -1,5 +1,14 @@
 ﻿<!DOCTYPE html>
 {% load staticfiles %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <script>
+    alert('{{message}}')
+    </script>
+    {% endfor %}
+</ul>
+{% endif %}
 <html>
 <head>
     <meta charset="utf-8">
@@ -8,221 +17,222 @@
     <title>BackTrack System</title>
 
     <!-- load stylesheets -->
-    <link rel="stylesheet" href="{% static 'bootstrap.min' %}">                                      <!-- Bootstrap style -->
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">                                      <!-- Bootstrap style -->
     <link rel="stylesheet" href="{% static 'magnific-popup.css' %}">                                <!-- Magnific pop up style, http://dimsemenov.com/plugins/magnific-popup/ -->
     <link rel="stylesheet" href="{% static 'main-style.css' %}">
 
 </head>
-    <body>
-        <div class="container">
-            <div class="row">
-                <div class="tm-left-right-container">
-                    <div class="tm-blue-bg tm-left-column">
-                        <div class="tm-logo-div text-xs-center">
-                            <h1 class="tm-site-name">PENDRAGON</h1>
-                        </div>
-                        <nav class="tm-main-nav">
-                            <ul class="tm-main-nav-ul">
-                                <li class="tm-nav-item">
-                                    <a href="#productbacklog" class="tm-nav-item-link">Product Backlog</a>
-                                </li>
-                                <li class="tm-nav-item">
-                                    <a href="#currentview" class="tm-nav-item-link">Current View</a>
-                                </li>
-                                <li class="tm-nav-item">
-                                    <a href="#fullview" class="tm-nav-item-link">Full View</a>
-                                </li>
-                                <li class="tm-nav-item">
-                                    <a href="#burndown" class="tm-nav-item-link">Burndown Chart</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div> <!-- Left column: logo and menu -->
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="tm-left-right-container">
+                <div class="tm-blue-bg tm-left-column">
+                    <div class="tm-logo-div text-xs-center">
+                        <h1 class="tm-site-name">PENDRAGON</h1>
+                    </div>
+                    <nav class="tm-main-nav">
+                        <ul class="tm-main-nav-ul">
+                            <li class="tm-nav-item">
+                                <a href="#productbacklog" class="tm-nav-item-link">Product Backlog</a>
+                            </li>
+                            <li class="tm-nav-item">
+                                <a href="#sprintbacklog" class="tm-nav-item-link">Sprint Backlog</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div> <!-- Left column: logo and menu -->
+                <!-- Right column: content -->
+                <div class="tm-right-column">
+                    <div class="tm-content-div">
+                        <!-- Product Backlog section -->
+                        <section id="productbacklog" class="tm-section">
+                            <header>
+                                <h1 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project: {{project.title}}</h1>
+                                <p>Description: {{project.description}}<p>
+                            </header>
+                            <form>
+                                <h2 class="tm-blue-text tm-section-title tm-margin-b-45">Product Backlog</h2>
 
-                    <!-- Right column: content -->
-                    <div class="tm-right-column">
-                        <div class="tm-content-div">
-                            <!-- Product Backlog section -->
-                            <section id="productbacklog" class="tm-section">
-                                <header>
-                                    <h1 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project: {{project.title}}</h1>
-                                    <p>Description: {{project.description}}<p>
-                                </header>
-                                <form>
-                                	<h2 class="tm-blue-text tm-section-title tm-margin-b-45">Product Backlog</h2>
-                                  <table width=100% border="1">
-　                                          <tr>
-　                                    <td>Title</td>
-                                    　<td>Description</td>
-                                      <td>Priority</td>
-                                      <td>Status</td>
-                                      <td>Estimated StoryPt</td>
-                                      <td>Cumulated StoryPt</td>
-                                    　</tr>
+                                <label>STATUS: </label>
+                                <select id="mylist" onchange="myFunction()" class='form-control'>
+                                    <option selected></option>
+                                    <option>Done</option>
+                                    <option>InProgress</option>
+                                    <option>NotYetStarted</option>
+                                </select>
+
+                                <table id="pbitable" width=100% border="1">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Estimated StoryPt</th>
+                                        <th>Cumulated StoryPt</th>
+                                    </tr>
                                     {% for p, c in pbi_list %}
                                     <tr>
-                                      <td><a class="btn btn-primary" href="./pbi/{{p.title}}">{{p.title}}</a></td>
-                                      <td>{{p.description}}</td>
-                                      <td>{{p.priority}}</td>
-                                      <td>{{p.status}}</td>
-                                      <td>{{p.storyPt}}</td>
-                                      <td>{{c}}</td>
+                                        <td><a class="btn btn-primary" href="./pbi/{{p.title}}">{{p.title}}</a></td>
+                                        <td>{{p.description}}</td>
+                                        <td>{{p.priority}}</td>
+                                        <td>{{p.status}}</td>
+                                        <td>{{p.storyPt}}</td>
+                                        <td>{{c}}</td>
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                      <td colspan="3">There is no pbi in the project.</td>
+                                        <td colspan="6">There is no pbi in the project.</td>
                                     </tr>
                                     {% endfor %}
 
-                                  </table>
+                                </table>
+                                <br>
 
                                 <input class="button" type="button" onclick="location.href='./createPbi'" value="Create"><br><br>
 
-                                </form>
-                            </section>
+                            </form>
+                        </section>
 
 
 
-                            <!-- Current View section -->
-                            <section id="currentview" class="tm-section">
-                                <div class="row">
-                                    <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
-                                        <header>
-                                            <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Sprint Backlog</h2>
-                                        </header>
-                                        <table width=100% border="1">
-　                                          <tr>
-　                                          <td>SprintNumber</td>
-                                          　<td>task - InProgress</td>
-                                            <td>task - NotYetStarted</td>
-                                            <td>task - Done</td>
-                                          　</tr>
-                                          {% for s in sprintList %}
-                                          <tr>
+                        <!-- Sprint Backlog section -->
+                        <section id="sprintbacklog" class="tm-section">
+                            <div class="row">
+                                <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
+                                    <header>
+                                        <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Sprint Backlog</h2>
+                                    </header>
+                                    <table id="table" border="1" width=150%>
+                                        <tr>
+                                            <th>Sprint Number</th>
+                                            <th class="col1">Finished</th>
+                                            <th class="col2">In Progress</th>
+                                            <th class="col3">Not yet started</th>
+                                        </tr>
+                                        {% for s in sprintList %}
+                                        <tr>
                                             <td>{{s.sprintNumber}}</td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                          </tr>
-                                          {% empty %}
-                                          <tr>
-                                            <td colspan="3">There is no pbi in the project.</td>
-                                          </tr>
-                                          {% endfor %}
-
-                                        </table>
-                                        <br>
-                                        <input class="button" type="button" onclick="location.href='./createSprint'" value="Create Sprint"><br><br>
-                                        <input class="button" type="button" onclick="location.href='./createTask'" value="Create Task"><br><br>
-                                    </div>
-
-
-                                </div>
-                            </section>
-
-                            <!-- Full View section -->
-                            <section id="fullview" class="tm-section">
-                              <div class="row">
-                                  <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
-                                      <header>
-                                          <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Full View</h2>
-                                      </header>
-                                      <table width=100% border="1">
-                                        <tr>
-                                      　  <td>pbi</td>
-                                          <td>task - finished</td>
-                                        　<td>task - in progress</td>
-                                          <td>task - not yet started</td>
-                                        　</tr>
-                                        {% for p in pbi_list %}
-                                        <tr>
-                                          <td>{{p.title}}</td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
+                                            <td class="col1"></td>
+                                            <td class="col2"></td>
+                                            <td class="col3"></td>
                                         </tr>
                                         {% empty %}
                                         <tr>
-                                          <td colspan="4">There is no pbi in the project.</td>
+                                            <td colspan="4">There is no sprint item in the project.</td>
                                         </tr>
                                         {% endfor %}
 
-                                      </table>
-                                  </div>
+                                    </table>
+                                    <br>
+                                    <input class="button" type="button" onclick="location.href='./createSprint'" value="CreateSprint">
+                                    <input class="button" type="button" onclick="location.href='./createTask'" value="CreateTask"><br><br>
+                                    <input type="button" id="hideCol1" value="Hide Finished" />
+                                    <input type="button" id="hideCol2" value="Hide In Progess" />
+                                    <input type="button" id="hideCol3" value="Hide Not Yet Started" />
+                                    <input type="button" id="showAll" value="ShowAll" />
+                                </div>
 
 
-                              </div>
-                            </section>
-
-                            <!-- Burndown Chart section -->
-                            <section id="burndown" class="tm-section">
-                                <header><h2 class="tm-blue-text tm-welcome-title tm-margin-b-30">Burndown Chart</h2></header>
-                                <script>
-                                  window.onload = function() {
-
-                                    var chart = new CanvasJS.Chart("chartContainer", {
-                                      animationEnabled: true,
-                                      title: {
-                                        text: ""
-                                      },
-                                      axisX: {
-                                        title: "Days"
-                                      },
-                                      axisY: {
-                                      title: "Remaining Effort Hours",
-                                      },
-data: [{
-  type: "line",
-  name: "CPU Utilization",
-  connectNullData: true,
-  //nullDataLineDashType: "solid",
-  yValueFormatString: "#,##0.##\"%\"",
-  yValueFormatString: "#,##0.##\"%\"",
-  dataPoints: [
-    { x: 1, y: 35.939 },
-    { x: 2, y: 40.896 },
-    { x: 3, y: 56.625 },
-    { x: 4, y: 26.003 },
-    { x: 5, y: 20.376 },
-    { x: 6, y: 19.774 },
-    { x: 7, y: 23.508 },
-    { x: 8, y: 18.577 },
-    { x: 9, y: 15.918 },
-    { x: 10, y: null }, // Null Data
-    { x: 11, y: 10.314 },
-    { x: 12, y: 10.574 },
-    { x: 13, y: 14.422 },
-    { x: 14, y: 18.576 },
-    { x: 15, y: 22.342 },
-    { x: 16, y: 22.836 },
-    { x: 17, y: 23.220 },
-    { x: 18, y: 23.594 },
-    { x: 19, y: 24.596 },
-    { x: 20, y: 31.947 },
-    { x: 21, y: 31.142 }
-  ]
-}]
-});
-chart.render();
-
-}
-</script>
-</head>
-<body>
-<div id="chartContainer" style="height: 370px; width: 100%;"></div>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-                            </section>
+                            </div>
+                        </section>
 
 
-                            <footer>
-                                <p class="tm-copyright-p">Copyright &copy; <span class="tm-current-year">2019</span> Zebra</p>
-                            </footer>
-                        </div>
 
-                    </div> <!-- Right column: content -->
-                </div>
-            </div> <!-- row -->
-        </div> <!-- container -->
+                        </section>
+
+
+                        <footer>
+                            <p class="tm-copyright-p">Copyright &copy; <span class="tm-current-year">2019</span> Zebra</p>
+                        </footer>
+                    </div>
+
+                </div> <!-- Right column: content -->
+            </div>
+        </div> <!-- row -->
+    </div> <!-- container -->
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#pbitable").sortable({
+                items: 'tr:not(tr:first-child)',
+                cursor: 'pointer',
+                axis: 'y',
+                dropOnEmpty: false,
+                start: function (e, ui) {
+                    ui.item.addClass("selected");
+                },
+                stop: function (e, ui) {
+                    ui.item.removeClass("selected");
+                    $(this).find("tr").each(function (index) {
+                        if (index > 0) {
+                            $(this).find("td").eq(2).html(index);
+                        }
+                    });
+                }
+            });
+        });
+        function myFunction() {
+            // Declare variables
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("mylist");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("pbitable");
+            tr = table.getElementsByTagName("tr");
+            // Loop through all table rows, and hide those who don't match the search query
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[3];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+        var hideCol1 = function () {
+            var e = document.getElementsByClassName("col1");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "none";
+            }
+        };
+        var hideCol2 = function () {
+            var e = document.getElementsByClassName("col2");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "none";
+            }
+        };
+        var hideCol3 = function () {
+            var e = document.getElementsByClassName("col3");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "none";
+            }
+        };
+        var showAll = function () {
+            var e = document.getElementsByClassName("col1");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "table-cell";
+            };
+            e = document.getElementsByClassName("col2");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "table-cell";
+            };
+            e = document.getElementsByClassName("col3");
+            for (var i = 0; i < e.length; i++) {
+                e[i].style.display = "table-cell";
+            };
+        };
+        (function () {
+            document.getElementById("hideCol1").addEventListener("click", hideCol1);
+            document.getElementById("hideCol2").addEventListener("click", hideCol2);
+            document.getElementById("hideCol3").addEventListener("click", hideCol3);
+            document.getElementById("showAll").addEventListener("click", showAll);
+        })();
+    </script>
 
 </body>
 </html>

@@ -12,6 +12,11 @@ class PbiModifyForm(ModelForm):
         model = Pbi
         exclude = ['projectID','title','sprints']
 
+class TaskModifyForm(ModelForm):
+    class Meta:
+        model = Task
+        exclude = ['pbi','creator']
+
 class CreateProjectForm(ModelForm):
     class Meta:
         model = Project

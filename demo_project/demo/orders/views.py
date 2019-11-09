@@ -85,6 +85,16 @@ def modifyPbi(request, projectID, target=None):
     return render(request, 'ModifyPbi.html', {'form':form})
 
 @login_required
+def modifyTask(request, projectID, target=None):
+    item  = Task.objects.filter(title=target).first()
+    address='../'+target
+    form = TaskModifyForm(request.POST or None, instance=item)
+    if form.is_valid():
+        form.save()
+        return HttpResponseRedirect(address)
+    return render(request, 'ModifyTask.html', {'form':form})
+
+@login_required
 @prodowner_required
 def deletePbi(request,projectID, pk):
 
@@ -165,6 +175,7 @@ class DevSignUpView(CreateView):
 def CreateSprint(request,projectID):
     if hasActiveSprint(request.user.productowner.project):
         messages.info(request, 'ALERT: There is already an active sprint in this project')
+        raise PermissionDenied()
         address='/'+projectID+'/main'
         return HttpResponseRedirect(address)
     else:

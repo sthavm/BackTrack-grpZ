@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="{% static 'modifypbi.css' %}" ,type="text/css">
+    <title>Modify Task</title>
+</head>
+
+<form method="POST" action="">
+    <h3 style="font-family:Arial, sans-serif; color:black;">Modify Task</h3>
+    {% csrf_token %}
+    <table border="1">
+        {{ form }}
+    </table>
+    <br>
+    <input class="button" type="submit" value="Save"><br><br>
+    <input class="button" type="button" onclick="location.href='./mod/delete'" value="Delete"><br><br>
+    <input class="button" type="button" onclick="location.href='.'" value="Back"><br><br>
+</html>
