@@ -56,6 +56,7 @@ def createProject(request):
             productOwner.save()
             projectID = newProject.projectID
             address='/'+projectID+'/main'
+            messages.info(request, 'You now become a Product Owner!')
             return HttpResponseRedirect(address)
     else:
         form = CreateProjectForm()
