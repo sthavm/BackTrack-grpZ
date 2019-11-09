@@ -194,7 +194,7 @@ def CreateTask(request,projectID):
         form = CreateTaskForm(request.POST)
         if form.is_valid():
             newTask = form.save(commit=False)
-            newTask.creator=request.user.developmentteammember
+            newTask.creator=request.user.devteammember
             newTask.status='Not Started'
             newTask.save()
             address='/'+projectID+'/main'
