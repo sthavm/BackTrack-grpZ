@@ -10,7 +10,7 @@ class PbiCreateForm(ModelForm):
 class PbiModifyForm(ModelForm):
     class Meta:
         model = Pbi
-        exclude = ['projectID','title']
+        exclude = ['projectID','title','sprints']
 
 class CreateProjectForm(ModelForm):
     class Meta:

@@ -41,14 +41,22 @@ class Sprint(models.Model):
         self.endDate= datetime.datetime.now() + d
 
     totalEffortHours = models.IntegerField(validators=[MinValueValidator(0)])
-    is_active = models.BooleanField('active sprint status', default=False)
+    def active(self):
+        now = models.DateField(default=timezone.now)
+        if self.startDate < now and now < self.endDate:
+            return True
+        return False
 
 
 class Pbi(models.Model):
+    STATUS_CHOICES=[
+        ('In Current Sprint','In Current Sprint'),
+        ('Not in Current Sprint', 'Not in Current Sprint')
+    ]
     title=models.CharField(max_length=200)
     projectID=models.ForeignKey(Project, on_delete=models.CASCADE)
     sprints=models.ManyToManyField(Sprint,blank=True)
-    status=models.CharField(max_length=20, default='NotYetStarted')
+    status=models.CharField(choices=STATUS_CHOICES, max_length=20, default='Not in Current Sprint')
     description=models.CharField(max_length=2000)
     priority=models.DecimalField(max_digits=4,decimal_places=0)
     storyPt=models.DecimalField(max_digits=2,decimal_places=0)

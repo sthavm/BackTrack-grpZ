@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, CreateView, ListView
 from django.forms import ModelForm
@@ -162,19 +163,24 @@ class DevSignUpView(CreateView):
 @login_required
 @prodowner_required
 def CreateSprint(request,projectID):
-    if request.method == "POST":
-        form = CreateSprintForm(request.POST)
-        if form.is_valid():
-            newSprint = form.save(commit=False)
-            newSprint.project=request.user.productowner.project
-            newSprint.setEndDate()
-            newSprint.is_active=True
-            newSprint.save()
-            address='/'+projectID+'/main'
-            return HttpResponseRedirect(address)
+    if hasActiveSprint(request.user.productowner.project):
+        messages.info(request, 'ALERT: There is already an active sprint in this project')
+        address='/'+projectID+'/main'
+        return HttpResponseRedirect(address)
     else:
-        form = CreateSprintForm()
-    return render(request, 'CreateSprint.html',{'form':form})
+        if request.method == "POST":
+            form = CreateSprintForm(request.POST)
+            if form.is_valid():
+                newSprint = form.save(commit=False)
+                newSprint.project=request.user.productowner.project
+                newSprint.setEndDate()
+                newSprint.is_active=True
+                newSprint.save()
+                address='/'+projectID+'/main'
+                return HttpResponseRedirect(address)
+        else:
+            form = CreateSprintForm()
+        return render(request, 'CreateSprint.html',{'form':form})
 
 @login_required
 @dev_required
@@ -212,3 +218,10 @@ def redir(request):
         projectID = currentUser.productowner.project.projectID
         address='/'+projectID+'/main'
         return redirect(address)
+
+def hasActiveSprint(Project):
+    sprints=Project.sprint_set.all()
+    for sprint in sprints:
+        if sprint.active == True:
+            return True
+    return False
