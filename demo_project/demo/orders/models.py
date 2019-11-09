@@ -74,7 +74,7 @@ class Task(models.Model):
     ]
 
     pbi = models.ForeignKey(Pbi, on_delete=models.CASCADE)
-    creator = models.OneToOneField(DevTeamMember,on_delete=models.SET_NULL, null=True)
+    creator = models.ForeignKey(DevTeamMember,on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200,primary_key=True)
     description = models.CharField(max_length=2000)
     status = models.CharField(choices=STATUS_CHOICES, max_length=15)
