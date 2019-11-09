@@ -1,66 +1,68 @@
-<!doctype html>
+﻿<!doctype html>
 {% load staticfiles %}
- <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<html>
+<head>
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'login-style.css' %}">
 
-        <title>DSG BACKTRACK</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
-        <link rel="stylesheet" href="{% static 'login-style.css' %}">
+</head>
+<body>
 
-    </head>
-    <body>
-
-        <section class="first-gallery-section">
-          <div class="container">
-            <div class="row">
-              <div class="col-md-12">
+    <section class="first-gallery-section">
+        <div class="container">
+            <div class="col-md-12">
                 <div class="text-content">
-                  <h2>Pendragon</h2>
-                  <div class="line-dec"></div>
-                  <span>Digital Services Group</span>
-                  <div class="primary-button">
-                    <br>
-                    <form action="Main.html" name="Login" method="post" onsubmit="return checkempty();">
-                      <input class="input" type="text" name="Username" placeholder="Username"><br>
-                      <input class="input" type="password" name="Password" placeholder="Password"><br><br>
-                      <input class="submitbut" type="submit" name="Submit" value="SUBMIT"><br><br>
-                    </form>
-                  </div>
+                    <h2>Pendragon</h2>
+                    <div class="line-dec"></div>
+                    <span>Digital Services Group</span><br><br>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
+                {% if form.non_field_errors %}
 
-        <footer>
-          <div class="container">
+                <div class="alert alert-light" role="alert" align="right">
+
+                    {% for error in form.non_field_errors %}
+                    <p{% if forloop.last %} class="mb-0" {% endif %}>
+                        {{ error }}</p>
+                        {% endfor %}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                </div>
+                {% endif %}
+
+                <div class="row">
+
+
+
+                    <form method="post" novalidate align="right">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <div class="text-content" style="display: inline" align="right">
+                            Username:
+                        </div>  {{ form.username }}<br><br>
+                        <div class="text-content" style="display: inline" align="right">
+                            Password:
+                        </div>  {{ form.password }}<br><br>
+                        <button type="submit" class="btn btn-primary" align="right">Log in</button>
+                    </form>
+
+
+
+                </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
             <div class="row">
-              <div class="col-md-12">
-                <p>Copyright &copy; 2019 ZEBRA</p>
-              </div>
+                <div class="col-md-12">
+                    <p>Copyright &copy; 2019 ZEBRA</p>
+                </div>
             </div>
-          </div>
-        </footer>
+        </div>
+    </footer>
 
-        <script language="JavaScript">
-        function checkempty()
-        {
-           if(Login.Username.value==""){alert("Please do not leave the fields empty");
-            Login.Username.focus();
-            return false;
-           }
-           if(Login.Password.value==""){alert("Please do not leave the fields empty");
-            Login.Password.focus();
-            return false;
-           }
-        }
-        </script>
-
-
-
-    </body>
+</body>
 </html>

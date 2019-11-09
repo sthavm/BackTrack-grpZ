@@ -197,6 +197,9 @@ def CreateTask(request,projectID):
             newTask.creator=request.user.devteammember
             newTask.status='Not Started'
             newTask.save()
+            p=newTask.pbi
+            p.status='In Current Sprint'
+            p.save()
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
     else:
@@ -231,8 +234,8 @@ def redir(request):
         messages.info(request, 'You are a Manager!')
         return redirect('/projects')
     elif (isDev):
-        messages.info(request, 'You are a Developer!')
         if (currentUser.devteammember.project == None):
+            messages.info(request, 'You are a Developer!')
             return redirect('/noproject')
         else:
             projectID = currentUser.devteammember.project.projectID
