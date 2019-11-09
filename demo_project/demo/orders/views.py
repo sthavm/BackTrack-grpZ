@@ -173,12 +173,6 @@ class DevSignUpView(CreateView):
 @login_required
 @prodowner_required
 def CreateSprint(request,projectID):
-    if hasActiveSprint(request.user.productowner.project):
-        messages.info(request, 'ALERT: There is already an active sprint in this project')
-        raise PermissionDenied()
-        address='/'+projectID+'/main'
-        return HttpResponseRedirect(address)
-    else:
         if request.method == "POST":
             form = CreateSprintForm(request.POST)
             if form.is_valid():
@@ -206,9 +200,25 @@ def CreateTask(request,projectID):
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
     else:
-        form = CreateSprintForm()
-    return render(request, 'CreateSprint.html',{'form':form})
+        form = CreateTaskForm()
+    return render(request, 'CreateTask.html',{'form':form})
 
+def CreateSprintLanding(request,projectID):
+    sprints=request.user.productowner.project.sprint_set.all()
+    hasActiveSprint=False
+    for sprint in sprints:
+        sprint.active()
+        if sprint.is_active == True:
+            hasActiveSprint = True
+            break
+        else:
+            hasActiveSprint = False
+    
+    if hasActiveSprint:
+            address='/'+projectID+'/main'
+            return HttpResponseRedirect(address)
+    else:
+        return HttpResponseRedirect('/'+projectID+'/main/createSprint')
 
 @login_required
 def redir(request):
@@ -229,10 +239,3 @@ def redir(request):
         projectID = currentUser.productowner.project.projectID
         address='/'+projectID+'/main'
         return redirect(address)
-
-def hasActiveSprint(Project):
-    sprints=Project.sprint_set.all()
-    for sprint in sprints:
-        if sprint.active == True:
-            return True
-    return False
