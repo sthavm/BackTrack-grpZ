@@ -36,16 +36,17 @@ class Sprint(models.Model):
     sprintNumber=models.IntegerField(validators=[MinValueValidator(0)])
     durationInDays = models.IntegerField(validators=[MinValueValidator(0)])
     endDate = models.DateField()
+    is_active = models.BooleanField('Active Sprint',default=False)
     def setEndDate(self):
         d=datetime.timedelta(days=self.durationInDays)
         self.endDate= datetime.datetime.now() + d
 
     totalEffortHours = models.IntegerField(validators=[MinValueValidator(0)])
     def active(self):
-        now = models.DateField(default=timezone.now)
-        if self.startDate < now and now < self.endDate:
-            return True
-        return False
+        if self.endDate > datetime.date.today():
+            is_active=True
+        else:
+            is_active=False
 
 
 class Pbi(models.Model):
@@ -73,7 +74,7 @@ class Task(models.Model):
     ]
 
     pbi = models.ForeignKey(Pbi, on_delete=models.CASCADE)
-    creator = models.OneToOneField(DevTeamMember,on_delete=models.SET_NULL, null=True)
+    creator = models.ForeignKey(DevTeamMember,on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200,primary_key=True)
     description = models.CharField(max_length=2000)
     status = models.CharField(choices=STATUS_CHOICES, max_length=15)
