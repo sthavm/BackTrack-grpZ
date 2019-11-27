@@ -74,6 +74,23 @@ class OnePbi(TemplateView):
         context['pbi']=Pbi_list.filter(title=target).filter(projectID=projectID).first()
         return context
 
+class CurrentPbi(TemplateView):
+    template_name="currentPbi.html"
+
+    def get_context_data(self, **kwargs):
+        target=self.kwargs['target']
+        projectID=self.kwargs['projectID']
+        context=super().get_context_data(**kwargs)
+        Pbi_list=Pbi.objects.all()
+        pbi=Pbi_list.filter(title=target).filter(projectID=projectID).first()
+        sprints=pbi.sprints.all()
+        sprintNum=[]
+        for s in sprints:
+            sprintNum+=str(s.sprintNumber)
+        context['sprintNum']=sprintNum
+        context['pbi']=pbi
+        return context
+
 @login_required
 @prodowner_required
 def modifyPbi(request, projectID, target=None):
@@ -86,7 +103,7 @@ def modifyPbi(request, projectID, target=None):
     return render(request, 'ModifyPbi.html', {'form':form})
 
 @login_required
-def modifyTask(request, projectID, target=None):
+def modifyTask(request, projectID, pbi,target=None):
     item  = Task.objects.filter(title=target).first()
     address='/'+projectID+'/main'
     form = TaskModifyForm(request.POST or None, instance=item)
@@ -109,6 +126,14 @@ def deletePbi(request,projectID, pk):
         form=PbiCreateForm(instance=trash)
     return render(request, 'delete.html',{'form':form})
 
+def deleteTask(request,projectID, pbi, target):
+    sprints=Sprint.objects.filter(project=projectID)
+    tmp=Pbi.objects.filter(projectID=projectID).get(title=pbi)
+    task=Task.objects.filter(pbi=tmp).filter(title=target)
+    task.delete()
+    address='/'+projectID+'/main'
+    return HttpResponseRedirect(address)
+
 class AllProjects(ListView):
     model = Project
     template_name = "allprojects.html"
@@ -117,6 +142,31 @@ class AllProjects(ListView):
         context = super().get_context_data(**kwargs)
         context['now'] = timezone.now()
         return context
+class allSprint(TemplateView):
+    template_name="AllSprint.html"
+    def get_context_data(self, **kwargs):
+        projectID=self.kwargs['projectID']
+        context = super().get_context_data(**kwargs)
+        sprintList=Sprint.objects.filter(project=projectID).order_by('sprintNumber')
+        pbiList=Pbi.objects.filter(sprints__in=sprintList)
+        mapping=[]
+        for s in sprintList:
+            for p in pbiList:
+                tmp=(s,p, Pbi.objects.filter(pk=p.pk).filter(sprints=s).exists())
+                mapping.append(tmp)
+        taskList=Task.objects.filter(pbi__in=pbiList)
+        taskDone=taskList.filter(status="Completed")
+        taskProgress=taskList.filter(status="In Progress")
+        taskNot=taskList.filter(status="Not Started")
+        context['sprintList']=sprintList
+        context['pbiList']=pbiList
+        context['taskDone']=taskDone
+        context['taskProgress']=taskProgress
+        context['taskNot']=taskNot
+        context['mapping']=mapping
+        print(mapping)
+        return context
+
 
 class mainPage(TemplateView):
     template_name="main.html"
@@ -125,24 +175,31 @@ class mainPage(TemplateView):
         context = super().get_context_data(**kwargs)
         project=Project.objects.filter(projectID=projectID).first()
         pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
-        sprintList=Sprint.objects.filter(project=projectID).order_by('sprintNumber')
-        taskList=Task.objects.all()
+        currentSprint=Sprint.objects.filter(project=projectID).filter(is_active=True).first()
+        if currentSprint==None:
+            currentPbiList=[]
+        else:
+            currentPbiList=Pbi.objects.filter(sprints=currentSprint)
+        taskList=Task.objects.filter(pbi__in=currentPbiList)
         taskDone=taskList.filter(status="Completed")
         taskProgress=taskList.filter(status="In Progress")
         taskNot=taskList.filter(status="Not Started")
         cumsumList=[]
         cumsum=0
         for i in range (len(pbiList)):
-            cumsum+=pbiList[len(pbiList)-1-i].storyPt
+            cumsum+=pbiList[i].storyPt
             cumsumList.append(int(cumsum))
-        cumsumList.reverse()
         zipped=zip(pbiList, cumsumList)
         context['pbi_list'] = zipped
-        context['sprintList']=sprintList
+        context['currentSprint']=currentSprint
         context['project']=project
-        context['task']=taskList
+
+        context['currentPbiList']=currentPbiList
+
         context['taskDone']=taskDone
+
         context['taskProgress']=taskProgress
+
         context['taskNot']=taskNot
         return context
 
@@ -198,17 +255,18 @@ def CreateSprint(request,projectID):
 
 @login_required
 @dev_required
-def CreateTask(request,projectID):
+def CreateTask(request,projectID,target):
+    sprints=Sprint.objects.filter(project=projectID)
+    pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
     if request.method == "POST":
         form = CreateTaskForm(request.POST)
         if form.is_valid():
             newTask = form.save(commit=False)
             newTask.creator=request.user.devteammember
             newTask.status='Not Started'
+            newTask.pbi=pbi
             newTask.save()
             p=newTask.pbi
-            p.status='In Current Sprint'
-            p.save()
             address='/'+projectID+'/main'
             return HttpResponseRedirect(address)
     else:
@@ -232,6 +290,33 @@ def CreateSprintLanding(request,projectID):
             return HttpResponseRedirect(address)
     else:
         return HttpResponseRedirect('/'+projectID+'/main/createSprint')
+
+def BringPbiToSprint(request,projectID,target):
+    sprints=Sprint.objects.filter(project=projectID)
+    pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
+    for s in sprints:
+        if s.is_active == True:
+            allCPbi=s.pbi_set.all()
+            for p in allCPbi:
+                if p==pbi:
+                    messages.info(request, 'Same PBI Cannot be Added Again')
+                    return HttpResponseRedirect('/'+projectID+'/main/'+'pbi/'+target)
+            pbi.status="In Progress"
+            pbi.save()
+            pbi.sprints.add(s)
+            address='/'+projectID+'/main'
+            return HttpResponseRedirect(address)
+    messages.info(request, 'No Active Sprint')
+    return HttpResponseRedirect('/'+projectID+'/main/'+'pbi/'+target)
+
+def RemoveCurrentPbi(request, projectID,target):
+    sprints=Sprint.objects.filter(project=projectID)
+    pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
+    for s in sprints:
+        if s.is_active == True:
+            pbi.sprints.remove(s)
+            address='/'+projectID+'/main'
+            return HttpResponseRedirect(address)
 
 @login_required
 def redir(request):

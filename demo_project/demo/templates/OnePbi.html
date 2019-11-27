@@ -1,6 +1,15 @@
 
 <!DOCTYPE html>
 {% load staticfiles %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <script>
+    alert('{{message}}')
+    </script>
+    {% endfor %}
+</ul>
+{% endif %}
 <html>
 <head>
   <meta charset="utf-8">
@@ -21,6 +30,7 @@
 
 
 <input class="button" type="button" onclick="location.href='mod'" value="Modify"><br><br>
+<input class="button" type="button" onclick="location.href='./bringPbi'" value="Add to Current Sprint"><br><br>
 <input class="button" type="button" onclick="location.href='../../'" value="Back"><br><br>
 
 </form>

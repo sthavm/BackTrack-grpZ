@@ -51,13 +51,14 @@ class Sprint(models.Model):
 
 class Pbi(models.Model):
     STATUS_CHOICES=[
-        ('In Current Sprint','In Current Sprint'),
-        ('Not in Current Sprint', 'Not in Current Sprint')
+        ('Not Started','Not Started'),
+        ('In Progress','In Progress'),
+        ('Completed','Completed')
     ]
     title=models.CharField(max_length=200)
     projectID=models.ForeignKey(Project, on_delete=models.CASCADE)
     sprints=models.ManyToManyField(Sprint,blank=True)
-    status=models.CharField(choices=STATUS_CHOICES, max_length=20, default='Not in Current Sprint')
+    status=models.CharField(choices=STATUS_CHOICES, max_length=20, default='Not Started')
     description=models.CharField(max_length=2000)
     priority=models.DecimalField(max_digits=4,decimal_places=0)
     storyPt=models.DecimalField(max_digits=2,decimal_places=0)
@@ -75,8 +76,17 @@ class Task(models.Model):
 
     pbi = models.ForeignKey(Pbi, on_delete=models.CASCADE)
     creator = models.ForeignKey(DevTeamMember,on_delete=models.SET_NULL, null=True)
-    title = models.CharField(max_length=200,primary_key=True)
+    title = models.CharField(max_length=200)
     description = models.CharField(max_length=2000)
     status = models.CharField(choices=STATUS_CHOICES, max_length=15)
     priority=models.DecimalField(max_digits=4,decimal_places=0)
     effortHours = models.IntegerField(validators=[MinValueValidator(0)])
+    class Meta:
+        unique_together = (("title", "pbi"),)
+
+# class Sprint_Pbi(models.Model):
+#     sprint=models.ForeignKey(Sprint, on_delete=models.CASCADE)
+#     project=models.ForeignKey(Project, on_delete=models.CASCADE)
+#     pbi=models.ForeignKey(Pbi, on_delete=models.CASCADE)
+#     class Meta:
+#         unique_together = (("project","sprint", "pbi"),)

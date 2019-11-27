@@ -56,9 +56,9 @@
                                 <label>STATUS: </label>
                                 <select id="mylist" onchange="myFunction()" class='form-control'>
                                     <option selected></option>
-                                    <option>Done</option>
-                                    <option>InProgress</option>
-                                    <option>NotYetStarted</option>
+                                    <option>Completed</option>
+                                    <option>In Progress</option>
+                                    <option>Not Started</option>
                                 </select>
 
                                 <table id="pbitable" width=100% border="1">
@@ -100,48 +100,57 @@
                             <div class="row">
                                 <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
                                     <header>
-                                        <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Sprint Backlog</h2>
+                                        <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Current Sprint</h2>
+                                        {% if currentSprint.sprintNumber == null %}
+                                          <p>No Active Sprint<p>
+                                        {% else %}
+                                          <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
+                                        {% endif %}
                                     </header>
                                     <table id="table" border="1" width=150%>
                                         <tr>
-                                            <th>Sprint Number</th>
-                                            <th class="col1">Finished</th>
-                                            <th class="col2">In Progress</th>
-                                            <th class="col3">Not yet started</th>
+                                            <th>PBI</th>
+                                            <th>Finished</th>
+                                            <th>In Progress</th>
+                                            <th>Not yet started</th>
                                         </tr>
-                                        {% for s in sprintList %}
+                                        {% for p in currentPbiList %}
                                         <tr>
-                                            <td>{{s.sprintNumber}}</td>
+                                            <td><a class="btn btn-primary" href="./currentpbi/{{p.title}}">{{p.title}}</a></td>
                                             <td>
                                               {% for t in taskDone %}
-                                                <a class="btn btn-primary" href="./task/{{t.title}}/mod">{{t.title}}</a>
+                                                {% if t.pbi == p %}
+                                                    <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+                                                {% endif %}
                                               {% endfor %}
                                             </td>
                                             <td>
                                               {% for t in taskProgress %}
-                                                <a class="btn btn-primary" href="./task/{{t.title}}/mod">{{t.title}}</a>
+                                                {% if t.pbi == p %}
+
+                                                    <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+
+                                                {% endif %}
                                               {% endfor %}
                                             </td>
                                             <td>
                                               {% for t in taskNot %}
-                                                <a class="btn btn-primary" href="./task/{{t.title}}/mod">{{t.title}}</a>
+                                                {% if t.pbi == p %}
+                                                    <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+                                                {% endif %}
                                               {% endfor %}
                                             </td>
                                         </tr>
                                         {% empty %}
                                         <tr>
-                                            <td colspan="4">There is no sprint item in the project.</td>
+                                            <td colspan="4">No PBI is added.</td>
                                         </tr>
                                         {% endfor %}
 
                                     </table>
                                     <br>
                                     <input class="button" type="button" onclick="location.href='./createSprintLanding'" value="Create Sprint">
-                                    <input class="button" type="button" onclick="location.href='./createTask'" value="Create Task"><br><br>
-                                    <input type="button" id="hideCol1" value="Hide Finished" />
-                                    <input type="button" id="hideCol2" value="Hide In Progess" />
-                                    <input type="button" id="hideCol3" value="Hide Not Yet Started" />
-                                    <input type="button" id="showAll" value="ShowAll" />
+                                    <input class="button" type="button" onclick="location.href='./AllSprint'" value="View All Sprint">
                                 </div>
 
 
