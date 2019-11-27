@@ -150,6 +150,31 @@ class AllProjects(ListView):
         context['now'] = timezone.now()
         return context
 
+class allSprint(TemplateView):
+    template_name="AllSprint.html"
+    def get_context_data(self, **kwargs):
+        projectID=self.kwargs['projectID']
+        context = super().get_context_data(**kwargs)
+        sprintList=Sprint.objects.filter(project=projectID).order_by('sprintNumber')
+        pbiList=Pbi.objects.filter(sprints__in=sprintList)
+        mapping=[]
+        for s in sprintList:
+            for p in pbiList:
+                tmp=(s,p, Pbi.objects.filter(pk=p.pk).filter(sprints=s).exists())
+                mapping.append(tmp)
+        taskList=Task.objects.filter(pbi__in=pbiList)
+        taskDone=taskList.filter(status="Completed")
+        taskProgress=taskList.filter(status="In Progress")
+        taskNot=taskList.filter(status="Not Started")
+        context['sprintList']=sprintList
+        context['pbiList']=pbiList
+        context['taskDone']=taskDone
+        context['taskProgress']=taskProgress
+        context['taskNot']=taskNot
+        context['mapping']=mapping
+        print(mapping)
+        return context
+
 class mainPage(TemplateView):
     template_name="main.html"
     def get_context_data(self, **kwargs):

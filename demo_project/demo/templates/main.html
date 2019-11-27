@@ -120,27 +120,25 @@
                                             <td>
                                                 {% for t in taskDone %}
                                                 {% if t.pbi == p %}
-                                                {% if t.status == Completed %}
+
                                                 <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
-                                                {% endif %}
+
                                                 {% endif %}
                                                 {% endfor %}
                                             </td>
                                             <td>
                                                 {% for t in taskProgress %}
                                                 {% if t.pbi == p %}
-                                                {% if t.status == InProgress %}
+
                                                 <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
-                                                {% endif %}
+
                                                 {% endif %}
                                                 {% endfor %}
                                             </td>
                                             <td>
                                                 {% for t in taskNot %}
                                                 {% if t.pbi == p %}
-                                                {% if t.status == NotStarted %}
                                                 <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
-                                                {% endif %}
                                                 {% endif %}
                                                 {% endfor %}
                                             </td>
@@ -158,6 +156,7 @@
                                     <input type="button" id="hideCol2" value="Hide In Progess" />
                                     <input type="button" id="hideCol3" value="Hide Not Yet Started" />
                                     <input type="button" id="showAll" value="ShowAll" />
+                                    <input class="button" type="button" onclick="location.href='./AllSprint'" value="View All Sprint">
                                 </div>
 
 
