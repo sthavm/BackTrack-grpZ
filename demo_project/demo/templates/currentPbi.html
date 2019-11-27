@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+
+<html>
+<head>
+  <meta charset="utf-8">
+   <link rel="stylesheet" href="{% static 'currentPbi.css' %}",type="text/css">
+  <title>PBI in Current Sprint: {{pbi.title}}</title>
+</head>
+
+<body>
+
+<form name="Pbi">
+
+<h3> Title:{{pbi.title}} </h3>
+<hr>
+<p>Sprint Number: {{sprintNum}}
+<p>Status: {{pbi.status}}</p>
+<p>Description:{{pbi.description}}</p>
+<p>Priority: {{pbi.priority}}</p>
+<p>Estimated Story Point:{{pbi.storyPt}}</p>
+
+
+<input class="button" type="button" onclick="location.href='./createTask'" value="Break into Task"><br><br>
+<input class="button" type="button" onclick="location.href='./remove'" value="Remove from Current Sprint"><br><br>
+<input class="button" type="button" onclick="location.href='../../'" value="Back"><br><br>
+
+</form>
+</body>
+</html>

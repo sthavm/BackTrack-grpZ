@@ -30,7 +30,7 @@ class CreateSprintForm(ModelForm):
 class CreateTaskForm(ModelForm):
     class Meta:
         model = Task
-        exclude = ['creator','status']
+        exclude = ['creator','status','pbi']
 
 class ManagerSignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
