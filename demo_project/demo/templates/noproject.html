@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+{% load staticfiles %}
 {% if messages %}
 <ul class="messages">
     {% for message in messages %}
@@ -7,6 +9,30 @@
     {% endfor %}
 </ul>
 {% endif %}
+<head>
+    
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>BackTrack System</title>
+
+        <!-- load stylesheets -->
+        <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">                                      <!-- Bootstrap style -->
+        <link rel="stylesheet" href="{% static 'magnific-popup.css' %}">                                <!-- Magnific pop up style, http://dimsemenov.com/plugins/magnific-popup/ -->
+        <link rel="stylesheet" href="{% static 'main-style.css' %}">
+</head>
 <h1> You are currently not working on any projects.</h1>
 
-<h3>Click <a href="/createProject"> here</a> to create a new project or wait for invitation.</h3>
+<h3>Click <a href="/createProject"> here</a> to create a new project.</h3>
+
+<h3>You have invitations to collaborate on the following projects:</h3>
+<ul>
+    {% for invite in invites %}
+    <li>{{invite.project.projectID}} : {{invite.project.title}}<br><input class="button" type="button" onclick="location.href='/{{invite.project.projectID}}/accept-invite-landing/'" value="Accept Invite" /></li>
+    {% endfor %}
+</ul>
+
+<!-- Logout-->
+<section id="logout" class="tm-section">
+    <input class="button" type="button" onclick="location.href='/logout'" value="Logout" />
+</section>
