@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+{% load staticfiles %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <script>
+    alert('{{message}}')
+    </script>
+    {% endfor %}
+</ul>
+{% endif %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>BackTrack System</title>
+
+    <!-- load stylesheets -->
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">                                      <!-- Bootstrap style -->
+    <link rel="stylesheet" href="{% static 'magnific-popup.css' %}">                                <!-- Magnific pop up style, http://dimsemenov.com/plugins/magnific-popup/ -->
+    <link rel="stylesheet" href="{% static 'main-style.css' %}">
+
+</head>
+
+<form method="POST" action="">
+    <h3 style="font-family:Arial, sans-serif; color:black;">Send Project Collaboration Invites</h3>
+    <hr>
+    {% csrf_token %}
+    <table border="1">
+        {{ form }}
+    </table>
+    <br>
+    <input class="button" type="submit" value="Save"><br><br>
+    <input class="button" type="button" onclick="location.href='../main'" value="Back"><br><br>
+</form>
+</html>

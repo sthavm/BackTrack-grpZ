@@ -84,6 +84,12 @@ class Task(models.Model):
     class Meta:
         unique_together = (("title", "pbi"),)
 
+class InviteMessage(models.Model):
+    receiver=models.ManyToManyField(User)
+    project=models.OneToOneField(Project,on_delete=models.CASCADE, primary_key=True)
+    def __str__(self):
+        return self.project.projectID
+
 # class Sprint_Pbi(models.Model):
 #     sprint=models.ForeignKey(Sprint, on_delete=models.CASCADE)
 #     project=models.ForeignKey(Project, on_delete=models.CASCADE)

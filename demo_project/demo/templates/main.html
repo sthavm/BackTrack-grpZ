@@ -102,10 +102,10 @@
                                     <header>
                                         <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Current Sprint</h2>
                                         {% if currentSprint.sprintNumber == null %}
-                                          <p>No Active Sprint<p>
-                                        {% else %}
-                                          <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
-                                        {% endif %}
+                                        <p>No Active Sprint<p>
+                                            {% else %}
+                                        <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
+                                            {% endif %}
                                     </header>
                                     <table id="table" border="1" width=150%>
                                         <tr>
@@ -118,27 +118,29 @@
                                         <tr>
                                             <td><a class="btn btn-primary" href="./currentpbi/{{p.title}}">{{p.title}}</a></td>
                                             <td>
-                                              {% for t in taskDone %}
-                                                {% if t.pbi == p %}
-                                                    <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
-                                                {% endif %}
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for t in taskProgress %}
+                                                {% for t in taskDone %}
                                                 {% if t.pbi == p %}
 
-                                                    <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
 
                                                 {% endif %}
-                                              {% endfor %}
+                                                {% endfor %}
                                             </td>
                                             <td>
-                                              {% for t in taskNot %}
+                                                {% for t in taskProgress %}
                                                 {% if t.pbi == p %}
-                                                    <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+
                                                 {% endif %}
-                                              {% endfor %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for t in taskNot %}
+                                                {% if t.pbi == p %}
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+                                                {% endif %}
+                                                {% endfor %}
                                             </td>
                                         </tr>
                                         {% empty %}
@@ -150,6 +152,10 @@
                                     </table>
                                     <br>
                                     <input class="button" type="button" onclick="location.href='./createSprintLanding'" value="Create Sprint">
+                                    <input type="button" id="hideCol1" value="Hide Finished" />
+                                    <input type="button" id="hideCol2" value="Hide In Progess" />
+                                    <input type="button" id="hideCol3" value="Hide Not Yet Started" />
+                                    <input type="button" id="showAll" value="ShowAll" />
                                     <input class="button" type="button" onclick="location.href='./AllSprint'" value="View All Sprint">
                                 </div>
 
@@ -160,8 +166,18 @@
 
 
                         </section>
+                        
+                        <!-- Collaborators Section-->
+                        {% if prodowner == True %}
+                        <section id="collabsection" class="tm-section">
+                            <input class="button" type="button" onclick="location.href='./create-invite'" value="Add Developers to this Project" />
+                        </section>
+                        {% endif %}
 
-
+                        <!-- Logout-->
+                        <section id="logout" class="tm-section">
+                            <input class="button" type="button" onclick="location.href='/logout'" value="Logout" />
+                        </section>
                         <footer>
                             <p class="tm-copyright-p">Copyright &copy; <span class="tm-current-year">2019</span> Zebra</p>
                         </footer>

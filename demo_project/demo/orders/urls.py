@@ -13,6 +13,9 @@ urlpatterns=[
   path('noproject/',
        views.NoProjectView.as_view(),
        name="NoProject"),
+  path('<projectID>/accept-invite-landing/',
+       views.AcceptInviteLanding,
+       name='AcceptInviteLanding'),
   path('projects',
        views.AllProjects.as_view(),
        name="AllProjects"),
@@ -63,7 +66,12 @@ urlpatterns=[
   path('<projectID>/main/<pbi>/task/<target>/mod/deleteTask',
         views.deleteTask,
         name='deleteTask'),
-    path('<projectID>/main/AllSprint',
+  path('<projectID>/main/AllSprint',
           views.allSprint.as_view(),
           name='allsprint'),
+  path('<projectID>/main/create-invite',
+       views.SendInvite,
+       name='sendInvite'),
+  path('logout',
+       views.logout_view)
 ]

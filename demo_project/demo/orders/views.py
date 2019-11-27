@@ -8,7 +8,7 @@ from .forms import *
 from .models import *
 from .decorators import *
 from django.http import HttpResponseRedirect
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 
 # Create your views here.
 
@@ -50,6 +50,7 @@ def createProject(request):
             request.user.is_devteam = False
             request.user.is_prodowner = True
             request.user.is_available=False
+            request.user.devteammember.delete()
             request.user.save()
             productOwner = ProductOwner.objects.create(user=request.user)
             productOwner.project = newProject
@@ -61,6 +62,12 @@ def createProject(request):
     else:
         form = CreateProjectForm()
     return render(request, 'CreateProject.html',{'form':form})
+
+def AcceptInviteLanding(request,projectID):
+    request.user.devteammember.project = Project.objects.filter(projectID=projectID).first()
+    request.user.devteammember.save()
+    return HttpResponseRedirect('/'+projectID+'/main')
+
 
 
 class OnePbi(TemplateView):
@@ -142,6 +149,7 @@ class AllProjects(ListView):
         context = super().get_context_data(**kwargs)
         context['now'] = timezone.now()
         return context
+
 class allSprint(TemplateView):
     template_name="AllSprint.html"
     def get_context_data(self, **kwargs):
@@ -167,7 +175,6 @@ class allSprint(TemplateView):
         print(mapping)
         return context
 
-
 class mainPage(TemplateView):
     template_name="main.html"
     def get_context_data(self, **kwargs):
@@ -190,6 +197,10 @@ class mainPage(TemplateView):
             cumsum+=pbiList[i].storyPt
             cumsumList.append(int(cumsum))
         zipped=zip(pbiList, cumsumList)
+        if self.request.user.is_prodowner:
+            context['prodowner']=True
+        else:
+            context['prodowner']=False
         context['pbi_list'] = zipped
         context['currentSprint']=currentSprint
         context['project']=project
@@ -197,10 +208,13 @@ class mainPage(TemplateView):
         context['currentPbiList']=currentPbiList
 
         context['taskDone']=taskDone
+        context['Completed']="Completed"
 
         context['taskProgress']=taskProgress
+        context['InProgess']="In Progress"
 
         context['taskNot']=taskNot
+        context['NotStarted']="Not Started"
         return context
 
 
@@ -209,6 +223,19 @@ class SignUpView(TemplateView):
 
 class NoProjectView(TemplateView):
     template_name = 'noproject.html'
+    def get_context_data(self,**kwargs):
+        context = super().get_context_data(**kwargs)
+        currentUser = self.request.user
+        distinctProjects=[]
+        distinctInvites=[]
+        relatedInvites = currentUser.invitemessage_set.all()
+        for invite in relatedInvites:
+            if invite.project not in distinctProjects:
+                distinctProjects.append(invite.project)
+                distinctInvites.append(invite)
+        context['invites']=distinctInvites
+        context['hello']="Hello there"
+        return context
 
 class ManagerSignUpView(CreateView):
     model = User
@@ -237,7 +264,6 @@ class DevSignUpView(CreateView):
        return redirect('/redir')
 
 @login_required
-@prodowner_required
 def CreateSprint(request,projectID):
         if request.method == "POST":
             form = CreateSprintForm(request.POST)
@@ -291,6 +317,25 @@ def CreateSprintLanding(request,projectID):
     else:
         return HttpResponseRedirect('/'+projectID+'/main/createSprint')
 
+@login_required
+@prodowner_required
+def SendInvite(request,projectID):
+    currentUser = request.user
+    project = currentUser.productowner.project
+    if request.method == "POST":
+        form = CreateInviteForm(request.POST)
+        if form.is_valid():
+            newInvite = form.save(commit=False)
+            newInvite.project=project
+            newInvite.save()
+            form.save_m2m()
+            address='/'+projectID+'/main'
+            return HttpResponseRedirect(address)
+    else:
+        form = CreateInviteForm()
+    return render(request, 'SendInvite.html',{'form':form})
+
+
 def BringPbiToSprint(request,projectID,target):
     sprints=Sprint.objects.filter(project=projectID)
     pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
@@ -341,3 +386,7 @@ def redir(request):
         address='/'+projectID+'/main'
         messages.info(request, 'You are a Product Owner!')
         return redirect(address)
+
+def logout_view(request):
+    logout(request)
+    return redirect('/')

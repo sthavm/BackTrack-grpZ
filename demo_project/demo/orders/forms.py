@@ -43,6 +43,14 @@ class ManagerSignUpForm(UserCreationForm):
             user.save()
         return user
 
+class CreateInviteForm(ModelForm):
+    idleDevs=DevTeamMember.objects.filter(project=None)
+    class Meta:
+        model=InviteMessage
+        fields=['receiver']
+    def __init__(self,*args,**kwargs):
+        super(CreateInviteForm,self).__init__(*args,**kwargs)
+        self.fields['receiver'].queryset=User.objects.filter(devteammember__in=self.idleDevs)
 
 class DevSignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
