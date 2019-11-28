@@ -172,7 +172,6 @@ class allSprint(TemplateView):
         context['taskProgress']=taskProgress
         context['taskNot']=taskNot
         context['mapping']=mapping
-        print(mapping)
         return context
 
 class mainPage(TemplateView):
