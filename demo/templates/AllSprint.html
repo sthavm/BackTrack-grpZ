@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<div class="row">
+    <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+
+            <title>BackTrack System</title>
+
+            <!-- load stylesheets -->
+            <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">                                      <!-- Bootstrap style -->
+            <link rel="stylesheet" href="{% static 'magnific-popup.css' %}">                                <!-- Magnific pop up style, http://dimsemenov.com/plugins/magnific-popup/ -->
+            <link rel="stylesheet" href="{% static 'main-style.css' %}">
+
+        </head>
+        <header>
+            <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">All Sprint</h2>
+            <!-- {% if currentSprint.sprintNumber == null %}
+              <p>No Active Sprint<p>
+            {% else %}
+              <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
+            {% endif %} -->
+        </header>
+
+        {% for s in sprintList%}
+        <p>Sprint Number: {{s.sprintNumber}}<p>
+            <table id="table" border="1" width=150%>
+                <tr>
+                    <th>PBI</th>
+                    <th>Finished</th>
+                    <th>In Progress</th>
+                    <th>Not yet started</th>
+                </tr>
+                {% for s2, p, tmp in mapping %}
+                {% if s2 == s %}
+                {% if tmp %}
+                <tr>
+                    <td><a class="btn btn-primary" href="./currentpbi/{{p.title}}">{{p.title}}</a></td>
+                    <td>
+                        {% for t in taskDone %}
+                        {% if t.pbi == p %}
+                        <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for t in taskProgress %}
+                        {% if t.pbi == p %}
+                        <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for t in taskNot %}
+                        {% if t.pbi == p %}
+                        <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endif %}
+                {% empty %}
+                <tr>
+                    <td colspan="4">No PBI is added.</td>
+                </tr>
+
+                {% endfor %}
+            </table>
+            {% empty %}
+        <p>No Sprint is Created<p>
+            {% endfor %}
+            <br>
+            <input class="button" type="button" onclick="location.href='.'" value="Back"><br><br>
+    </div>
+</div>
