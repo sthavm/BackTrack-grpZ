@@ -110,15 +110,16 @@
                                     </header>
                                     <div id="wrapper">
                                     <div id="grpChkBox">
-                                      <input type="checkbox" name="fin" checked="checked">FULL VIEW </input> <label>&nbsp;</label>
+                                      <input type="checkbox" name="fin" checked="checked">Completed </input> <label>&nbsp;</label>
+                                      <input type="checkbox" name="not" checked="checked">Not Completed </input> <label>&nbsp;</label>
                                     </div>
                                     <table id="table" border="1" width=150%>
                                       <thead>
                                         <tr class="tr_header">
                                           <th>PBI</th>
                                           <th class="fin">Finished</th>
-                                          <th>In Progress</th>
-                                          <th>Not yet started</th>
+                                          <th class="not">In Progress</th>
+                                          <th class="not">Not yet started</th>
                                         </tr>
                                       </thead>
                                       <tbody>
@@ -134,7 +135,7 @@
                                                 {% endif %}
                                                 {% endfor %}
                                             </td>
-                                            <td>
+                                            <td class="not">
                                                 {% for t in taskProgress %}
                                                 {% if t.pbi == p %}
 
@@ -143,7 +144,7 @@
                                                 {% endif %}
                                                 {% endfor %}
                                             </td>
-                                            <td>
+                                            <td class="not">
                                                 {% for t in taskNot %}
                                                 {% if t.pbi == p %}
                                                 <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}/mod">{{t.title}}</a>
