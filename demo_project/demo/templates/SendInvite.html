@@ -13,6 +13,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{% static 'invite.css' %}",type="text/css">
 
     <title>BackTrack System</title>
 
@@ -23,8 +24,9 @@
 
 </head>
 
+
 <form method="POST" action="">
-    <h3 style="font-family:Arial, sans-serif; color:black;">Send Project Collaboration Invites</h3>
+    <h3 style="font-family:Arial, sans-serif; color:black;">Send Project Collaboration Invites To Developers And Mangers</h3>
     <hr>
     {% csrf_token %}
     <table border="1">

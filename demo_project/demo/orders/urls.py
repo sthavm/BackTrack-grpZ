@@ -51,6 +51,9 @@ urlpatterns=[
   path('<projectID>/main/currentpbi/<target>/createTask',
        views.CreateTask,
        name='CreateTask'),
+  path('<projectID>/main/<pbi>/task/<target>/',
+        views.OneTask.as_view(),
+        name='OneTask'),
   path('<projectID>/main/<pbi>/task/<target>/mod/',
         views.modifyTask,
         name='modifyTask'),
@@ -73,5 +76,12 @@ urlpatterns=[
        views.SendInvite,
        name='sendInvite'),
   path('logout',
-       views.logout_view)
+       views.logout_view),
+    path('<projectID>/main/<pbi>/task/<target>/takeownership',
+        views.TakeOwnership,
+        name='TakeOwnership'),
+    path('<projectID>/main/<pbi>/task/<target>/giveupownership',
+        views.GiveUpOwnership,
+        name='GiveUpOwnership'),
+
 ]

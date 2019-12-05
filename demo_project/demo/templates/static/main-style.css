@@ -5,7 +5,6 @@ table td {
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
-    empty-cells: show;
 }
 body {
 	font-family: 'Open Sans', Helvetica, Arial, sans-serif;

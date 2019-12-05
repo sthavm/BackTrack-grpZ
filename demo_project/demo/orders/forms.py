@@ -15,12 +15,12 @@ class PbiModifyForm(ModelForm):
 class TaskModifyForm(ModelForm):
     class Meta:
         model = Task
-        exclude = ['pbi','creator']
+        exclude = ['pbi','owner']
 
 class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
-        exclude=[]
+        exclude=['projectID']
 
 class CreateSprintForm(ModelForm):
     class Meta:
@@ -30,7 +30,7 @@ class CreateSprintForm(ModelForm):
 class CreateTaskForm(ModelForm):
     class Meta:
         model = Task
-        exclude = ['creator','status','pbi']
+        exclude = ['owner','status','pbi']
 
 class ManagerSignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -39,12 +39,13 @@ class ManagerSignUpForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.is_manager = True
-        if commit:
-            user.save()
+        user.save()
+        manager= Manager.objects.create(user=user)
         return user
 
 class CreateInviteForm(ModelForm):
     idleDevs=DevTeamMember.objects.filter(project=None)
+    managers=Manager.objects.all()
     class Meta:
         model=InviteMessage
         fields=['receiver']

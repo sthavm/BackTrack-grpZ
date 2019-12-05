@@ -8,7 +8,7 @@ import datetime
 
 # Create your models here.
 class Project(models.Model):
-    projectID=models.CharField(max_length=4,primary_key=True)
+    projectID=models.AutoField(primary_key=True)
     title=models.CharField(max_length=200)
     description = models.CharField(max_length=2000)
     def __str__(self):
@@ -29,6 +29,10 @@ class ProductOwner(models.Model):
 class DevTeamMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
+
+class Manager(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    project= models.ManyToManyField(Project)
 
 class Sprint(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -75,12 +79,13 @@ class Task(models.Model):
     ]
 
     pbi = models.ForeignKey(Pbi, on_delete=models.CASCADE)
-    creator = models.ForeignKey(DevTeamMember,on_delete=models.SET_NULL, null=True)
+    owner = models.ForeignKey(DevTeamMember,on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=2000)
     status = models.CharField(choices=STATUS_CHOICES, max_length=15)
     priority=models.DecimalField(max_digits=4,decimal_places=0)
     effortHours = models.IntegerField(validators=[MinValueValidator(0)])
+    hourSpent=models.IntegerField(validators=[MinValueValidator(0)],null=True,blank=True)
     class Meta:
         unique_together = (("title", "pbi"),)
 
