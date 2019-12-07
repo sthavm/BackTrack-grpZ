@@ -14,7 +14,11 @@
 
 <h3> Title:{{pbi.title}} </h3>
 <hr>
-<p>Sprint Number: {{sprintNum}}
+<p>Sprint Number:
+  {% for s in sprintNum %}
+    {{s}}
+  {% endfor %}
+</p>
 <p>Status: {{pbi.status}}</p>
 <p>Description:{{pbi.description}}</p>
 <p>Priority: {{pbi.priority}}</p>

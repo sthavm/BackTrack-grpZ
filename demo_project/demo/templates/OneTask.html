@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <script>
+    alert('{{message}}')
+    </script>
+    {% endfor %}
+</ul>
+{% endif %}
+<html>
+<head>
+  <meta charset="utf-8">
+   <link rel="stylesheet" href="{% static 'onetask.css' %}",type="text/css">
+  <title>Task: {task.title}}</title>
+</head>
+
+<body>
+
+<form name="Task">
+
+<h3> Title:{{task.title}} </h3>
+<hr>
+<p>Owner: {{task.owner.user}}</p>
+<p>Status: {{task.status}}</p>
+<p>Description:{{task.description}}</p>
+<p>Priority: {{task.priority}}</p>
+<p>Estimated Effort Hours:{{task.effortHours}}</p>
+<p>Actual Time Spent:{{task.hourSpent}}</p>
+
+<input class="button" type="button" onclick="location.href='takeownership'" value="Take Ownership"><br><br>
+<input class="button" type="button" onclick="location.href='giveupownership'" value="Give Up Ownership"><br><br>
+<input class="button" type="button" onclick="location.href='mod'" value="Modify"><br><br>
+<input class="button" type="button" onclick="location.href='../../../'" value="Back"><br><br>
+
+</form>
+</body>
+</html>
