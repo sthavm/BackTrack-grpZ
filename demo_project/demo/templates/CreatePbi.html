@@ -4,13 +4,14 @@
 <head>
   <meta charset="utf-8">
 
-  <link rel="stylesheet" href="{% static 'modifypbi.css' %}",type="text/css">
-    <title>Modify Pbi</title>
+  <link rel="stylesheet" href="{% static 'createpbi.css' %}",type="text/css">
+    <title>Create Pbi</title>
 </head>
-
+<body style="background-image: linear-gradient(to left, #ffffff 50%, #010c4d 50%)">
 <form method="POST" action="">
   <h3 style="font-family:Arial, sans-serif; color:black;">Create Product Backlog Item</h3>
   <hr>
+  <br>
   {% csrf_token %}
   <table border="1">
     {{ form }}

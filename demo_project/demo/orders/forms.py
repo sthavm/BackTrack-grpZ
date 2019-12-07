@@ -1,7 +1,21 @@
 from django.forms import ModelForm,forms
 from django.db import transaction
 from django.contrib.auth.forms import UserCreationForm
+from django.forms.widgets import CheckboxSelectMultiple
 from .models import *
+
+class TeamForm(ModelForm):
+    class Meta:
+        model=DevTeamMember
+        exclude=['user','project']
+class ManagerViewForm(ModelForm):
+    class Meta:
+        model=Manager
+        exclude=['user','project']
+class ProductOwnerViewForm(ModelForm):
+    class Meta:
+        model=ProductOwner
+        exclude=['user','project']
 
 class PbiCreateForm(ModelForm):
     class Meta:
@@ -15,22 +29,22 @@ class PbiModifyForm(ModelForm):
 class TaskModifyForm(ModelForm):
     class Meta:
         model = Task
-        exclude = ['pbi','creator']
+        exclude = ['pbi','owner']
 
 class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
-        exclude=[]
+        exclude=['projectID']
 
 class CreateSprintForm(ModelForm):
     class Meta:
         model = Sprint
-        exclude = ['endDate','is_active','project']
+        exclude = ['startDate','endDate','is_active','project','sprintNumber','is_completed','is_current','teamID']
 
 class CreateTaskForm(ModelForm):
     class Meta:
         model = Task
-        exclude = ['creator','status','pbi']
+        exclude = ['owner','status','pbi']
 
 class ManagerSignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -39,18 +53,29 @@ class ManagerSignUpForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.is_manager = True
-        if commit:
-            user.save()
+        user.save()
+        manager= Manager.objects.create(user=user)
         return user
 
-class CreateInviteForm(ModelForm):
+class CreateDevInviteForm(ModelForm):
     idleDevs=DevTeamMember.objects.filter(project=None)
     class Meta:
         model=InviteMessage
         fields=['receiver']
     def __init__(self,*args,**kwargs):
-        super(CreateInviteForm,self).__init__(*args,**kwargs)
+        super(CreateDevInviteForm,self).__init__(*args,**kwargs)
+        self.fields['receiver'].widget = CheckboxSelectMultiple()
         self.fields['receiver'].queryset=User.objects.filter(devteammember__in=self.idleDevs)
+
+class CreateManagerInviteForm(ModelForm):
+    class Meta:
+        model=InviteMessage
+        fields=['receiver']
+    def __init__(self,*args,**kwargs):
+        manList = kwargs.pop('manList',None)
+        super(CreateManagerInviteForm,self).__init__(*args,**kwargs)
+        self.fields['receiver'].widget = CheckboxSelectMultiple()
+        self.fields['receiver'].queryset=User.objects.filter(manager__in=manList)
 
 class DevSignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
