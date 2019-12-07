@@ -22,6 +22,13 @@
               <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
             {% endif %} -->
         </header>
+        {% if devteam == False %}
+          <p>You are viewing the sprintbacklog of team: {{sprintView}}</p>
+        {% endif %}
+        {% if devteam == True %}
+        <p>Your Total Estimated Effort Hours: {{sumEHour}}hr</p>
+        <p>Your Total Acutal Effort Hours: {{sumAHour}}hr</p>
+        {% endif %}
         {% for s in sprintList%}
         <p>Sprint Number: {{s.sprintNumber}}<p>
             <table id="table" border="1" width=150%>
@@ -71,6 +78,6 @@
         <p>No Sprint is Created<p>
             {% endfor %}
             <br>
-            <input class="button" type="button" onclick="location.href='.'" " value="Back"><br><br>
+            <input class="button" type="button" onclick="location.href='.'" value="Back"><br><br>
     </div>
 </div>

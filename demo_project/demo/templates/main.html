@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 {% load staticfiles %}
 {% if messages %}
 <ul class="messages">
@@ -29,6 +29,7 @@
                 <div class="tm-blue-bg tm-left-column">
                     <div class="tm-logo-div text-xs-center">
                         <h1 class="tm-site-name">PENDRAGON</h1>
+                        <p>Welcome! {{userID}}<p>
                     </div>
                     <nav class="tm-main-nav">
                         <ul class="tm-main-nav-ul">
@@ -50,6 +51,9 @@
                             <header>
                                 <h1 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project: {{project.title}}</h1>
                                 <p>Description: {{project.description}}<p>
+                                {% if devteam %}
+                                <p>You are in Team: {{teamID}} <input class="button" type="button" onclick="location.href='./changeteam'" value="Change"> </P>
+                                {% endif %}
                             </header>
                             <form>
                                 <h2 class="tm-blue-text tm-section-title tm-margin-b-45">Product Backlog</h2>
@@ -58,8 +62,8 @@
                                 <select id="mylist" onchange="myFunction()" class='form-control'>
                                     <option selected></option>
                                     <option>Completed</option>
-                                    <option>In Progress</option>
-                                    <option>Not Started</option>
+                                    <option value="(*)">Not Completed</option>
+
                                 </select>
                                 <br>
                                 <table id="pbitable" width=100% border="1">
@@ -101,12 +105,20 @@
                             <div class="row">
                                 <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
                                     <header>
+
                                         <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Current Sprint</h2>
+                                        {% if devteam == False %}
+                                          <p>You are viewing the sprintbacklog of team: {{sprintView}}<input class="button" type="button" onclick="location.href='./changeview'" value="Change"></p>
+                                        {% endif %}
                                         {% if currentSprint.sprintNumber == null %}
                                         <p>No Active Sprint<p>
-                                            {% else %}
+                                        {% else %}
                                         <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
-                                            {% endif %}
+                                        {% endif %}
+                                        {% if devteam == True %}
+                                        <p>Your Estimated Effort Hours In This Sprint: {{sumEHour}}hr</p>
+                                        <p>Your Actual Effort Hours In This Sprint: {{sumAHour}}hr</p>
+                                        {% endif %}
                                     </header>
                                     <div id="wrapper">
                                     <div id="grpChkBox">
@@ -119,7 +131,7 @@
                                           <th>PBI</th>
                                           <th class="fin">Finished</th>
                                           <th class="not">In Progress</th>
-                                          <th class="not">Not yet started</th>
+                                          <th class="not">Not Started</th>
                                         </tr>
                                       </thead>
                                       <tbody>
@@ -161,25 +173,41 @@
                                     </table>
                                   </div>
                                     <br>
-                                    <input class="button" type="button" onclick="location.href='./createSprintLanding'" value="Create Sprint">
+                                    {% if devteam == True %}
+                                        {% if hasCurrentSprint == True %}
+                                            {% if hasActiveSprint == True %}
+                                                <input class="button" type="button" onclick="location.href='./end-sprint-landing'" value="End Sprint">
+                                            {% endif %}
+                                            {% if hasActiveSprint == False %}
+                                                <input class="button" type="button" onclick="location.href='./start-sprint-landing'" value="Start Sprint">
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if hasCurrentSprint == False %}
+                                            <input class="button" type="button" onclick="location.href='./createSprintLanding'" value="Create Sprint">
+                                        {% endif %}
+                                    {% endif %}
                                     <input class="button" type="button" onclick="location.href='./AllSprint'" value="View All Sprint">
-                                </div>
 
+                                </div>
 
 
                             </div>
                         </section>
 
-                
+
+
+                        </section>
+
                         <!-- Collaborators Section-->
                         {% if prodowner == True %}
                         <section id="collabsection" class="tm-section">
-                            <input class="button" type="button" onclick="location.href='./create-invite'" value="Add Developers to this Project" />
+                            <input class="button" type="button" onclick="location.href='./create-invite'" value="Invite Developers and Managers to this Project" />
                         </section>
                         {% endif %}
-
-                
-                                                <!-- Project metrics section -->
+                        
+        
+                        <br>
+                        <!-- Project metrics section -->
                         <section id="metrics" class="tm-section">
                             <header>
                                 <h3 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project Metrics</h3>
@@ -195,7 +223,7 @@
                                 <tr>
                                     <td>{{currentSprint.sprintNumber}}</td>
                                     
-                                    <td>&emsp;effort hours / &emsp;days</td>
+                                    <td>  {{ sprintHoursCompleted }} effort hours</td>
                                 </tr>
                             </table>
                                 
@@ -229,6 +257,14 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                            {% if currentSprint.sprintNumber != null %}
+                            <h2> Hours Completed: </h2>
+                            <ul>
+                                {% for key,values in changes.items %}
+                                <li>Day {{ key }}: {{ values.0 }} hour completed/{{ values.1 }} hours total</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
                             
                             <br>
                             <p>Effort Hours Spent<p>
@@ -242,34 +278,39 @@
                                       </thead>
                                       <tbody>
                                         
+                                       
+                                    {% for t in taskDone %}
                                         <tr>
-                                            {% for t in taskDone %}
-                                                <td>{{t.title}}</td>
-                                                <td></td>
-                                                <td>{{t.effortHours}}</td>
-                                            {% endfor %} 
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
                                         </tr>
+                                    {% endfor %} 
+                                        
+                                        
+                                    {% for t in taskProgress %}
                                         <tr>
-                                            {% for t in taskProgress %}
-                                                <td>{{t.title}}</td>
-                                                <td></td>
-                                                <td>{{t.effortHours}}</td>
-                                            {% endfor %}  
-                                        </tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
                                         <tr>
-                                            {% for t in taskNot %}
-                                                <td>{{t.title}}</td>
-                                                <td></td>
-                                                <td>{{t.effortHours}}</td>
-                                            {% endfor %}  
+                                    {% endfor %}  
+                                        
+                                        
+                                    {% for t in taskNot %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
                                         </tr>
+                                    {% endfor %}  
+                                        
                                       </tbody>
                                     </table>
 
                         </section>
-                
-                
-                
+        
+        
                         <!-- Logout-->
                         <section id="logout" class="tm-section">
                             <input class="button" type="button" onclick="location.href='/logout'" value="Logout" />
@@ -288,25 +329,6 @@
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css" />
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"></script>
     <script type="text/javascript">
-        $(function () {
-            $("#pbitable").sortable({
-                items: 'tr:not(tr:first-child)',
-                cursor: 'pointer',
-                axis: 'y',
-                dropOnEmpty: false,
-                start: function (e, ui) {
-                    ui.item.addClass("selected");
-                },
-                stop: function (e, ui) {
-                    ui.item.removeClass("selected");
-                    $(this).find("tr").each(function (index) {
-                        if (index > 0) {
-                            $(this).find("td").eq(2).html(index);
-                        }
-                    });
-                }
-            });
-        });
         function myFunction() {
             // Declare variables
             var input, filter, table, tr, td, i, txtValue;
