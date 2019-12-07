@@ -1,0 +1,363 @@
+﻿<!DOCTYPE html>
+{% load staticfiles %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <script>
+    alert('{{message}}')
+    </script>
+    {% endfor %}
+</ul>
+{% endif %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>BackTrack System</title>
+
+    <!-- load stylesheets -->
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">                                      <!-- Bootstrap style -->
+    <link rel="stylesheet" href="{% static 'magnific-popup.css' %}">                                <!-- Magnific pop up style, http://dimsemenov.com/plugins/magnific-popup/ -->
+    <link rel="stylesheet" href="{% static 'main-style.css' %}">
+
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="tm-left-right-container">
+                <div class="tm-blue-bg tm-left-column">
+                    <div class="tm-logo-div text-xs-center">
+                        <h1 class="tm-site-name">PENDRAGON</h1>
+                          <p class="username">Welcome! {{userID}}<p>
+                    </div>
+                    <nav class="tm-main-nav">
+                        <ul class="tm-main-nav-ul">
+                            <li class="tm-nav-item">
+                                <a href="#productbacklog" class="tm-nav-item-link">Product Backlog</a>
+                            </li>
+                            <li class="tm-nav-item">
+                                <a href="#sprintbacklog" class="tm-nav-item-link">Sprint Backlog</a>
+                            </li>
+                            <li class="tm-nav-item">
+                                <a href="#metrics" class="tm-nav-item-link">Project Metrics</a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                </div> <!-- Left column: logo and menu -->
+                <!-- Right column: content -->
+                <div class="tm-right-column">
+                    <div class="tm-content-div">
+                        <!-- Product Backlog section -->
+                        <section id="productbacklog" class="tm-section">
+                            <header>
+                                <h1 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project: {{project.title}}</h1>
+                                <p>Description: {{project.description}}<p>
+                                {% if devteam %}
+                                <p>You are in Team: {{teamID}} <input class="button" type="button" onclick="location.href='./changeteam'" value="Change"> </P>
+                                {% endif %}
+                            </header>
+                            <form>
+                                <h2 class="tm-blue-text tm-section-title tm-margin-b-45">Product Backlog</h2>
+
+                                <label>STATUS: </label>
+                                <select id="mylist" onchange="myFunction()" class='form-control'>
+                                    <option selected></option>
+                                    <option>Completed</option>
+                                    <option value="(*)">Not Completed</option>
+
+                                </select>
+                                <br>
+                                <table id="pbitable" width=100% border="1">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Estimated StoryPt</th>
+                                        <th>Cumulated StoryPt</th>
+                                    </tr>
+                                    {% for p, c in pbi_list %}
+                                    <tr>
+                                        <td><a class="btn btn-primary" href="./pbi/{{p.title}}">{{p.title}}</a></td>
+                                        <td>{{p.description}}</td>
+                                        <td>{{p.priority}}</td>
+                                        <td>{{p.status}}</td>
+                                        <td>{{p.storyPt}}</td>
+                                        <td>{{c}}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6">There is no pbi in the project.</td>
+                                    </tr>
+                                    {% endfor %}
+
+                                </table>
+                                <br>
+
+                                <input class="button" type="button" onclick="location.href='./createPbi'" value="Create"><br><br>
+
+                            </form>
+                        </section>
+
+
+
+                        <!-- Sprint Backlog section -->
+                        <section id="sprintbacklog" class="tm-section">
+                            <div class="row">
+                                <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
+                                    <header>
+
+                                        <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Current Sprint</h2>
+                                        {% if devteam == False %}
+                                          <p>You are viewing the sprintbacklog of team: {{sprintView}}<label>&nbsp;</label><input class="button" type="button" onclick="location.href='./changeview'" value="Change"></p>
+                                        {% endif %}
+                                        {% if currentSprint.sprintNumber == null %}
+                                        <p>No Active Sprint<p>
+                                        {% else %}
+                                        <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
+                                        <p>Start date: {{currentSprint.startDate}}</p>
+                                        <p>End Date: {{currentSprint.endDate}}</p>
+                                        {% endif %}
+                                        {% if devteam == True %}
+                                        <p>Your Estimated Effort Hours In This Sprint: {{sumEHour}}hr</p>
+                                        <p>Your Actual Effort Hours In This Sprint: {{sumAHour}}hr</p>
+                                        {% endif %}
+                                    </header>
+                                    <div id="wrapper">
+                                    <div id="grpChkBox">
+                                      <input type="checkbox" name="fin" checked="checked">Completed </input> <label>&nbsp;</label>
+                                      <input type="checkbox" name="not" checked="checked">Not Completed </input> <label>&nbsp;</label>
+                                    </div>
+                                    <table id="table" border="1" width=150%>
+                                      <thead>
+                                        <tr class="tr_header">
+                                          <th>PBI</th>
+                                          <th class="fin">Finished</th>
+                                          <th class="not">In Progress</th>
+                                          <th class="not">Not Started</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {% for p in currentPbiList %}
+                                        <tr>
+                                            <td><a class="btn btn-primary" href="./currentpbi/{{p.title}}">{{p.title}}</a></td>
+                                            <td class="fin">
+                                                {% for t in taskDone %}
+                                                {% if t.pbi == p %}
+
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
+
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td class="not">
+                                                {% for t in taskProgress %}
+                                                {% if t.pbi == p %}
+
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
+
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td class="not">
+                                                {% for t in taskNot %}
+                                                {% if t.pbi == p %}
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4">No PBI is added.</td>
+                                        </tr>
+                                        {% endfor %}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                    <br>
+                                    {% if devteam == True %}
+                                        {% if hasCurrentSprint == True %}
+                                            {% if hasActiveSprint == True %}
+                                                <input class="button" type="button" onclick="location.href='./end-sprint-landing'" value="End Sprint">
+                                            {% endif %}
+                                            {% if hasActiveSprint == False %}
+                                                <input class="button" type="button" onclick="location.href='./start-sprint-landing'" value="Start Sprint">
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if hasCurrentSprint == False %}
+                                            <input class="button" type="button" onclick="location.href='./createSprintLanding'" value="Create Sprint">
+                                        {% endif %}
+                                    {% endif %}
+                                    <input class="button" type="button" onclick="location.href='./AllSprint'" value="View All Sprint">
+
+                                </div>
+
+
+                            </div>
+                        </section>
+
+
+
+                        </section>
+
+                        <!-- Collaborators Section-->
+                        {% if prodowner == True %}
+                        <section id="collabsection" class="tm-section">
+                            <input class="button" type="button" onclick="location.href='./create-invite'" value="Invite Developers and Managers to this Project" />
+                        </section>
+                        {% endif %}
+
+
+                        <br>
+                        <!-- Project metrics section -->
+                        <section id="metrics" class="tm-section">
+                            <header>
+                                <h3 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project Metrics</h3>
+                            </header>
+                            <p>Velocity of current sprint<p>
+                            <table id="table" border="1" width=100%>
+                                <thead>
+                                    <tr class="tr_header">
+                                        <th>Sprint</th>
+                                        <th>Velocity</th>
+                                    </tr>
+                                </thead>
+                                <tr>
+                                    <td>{{currentSprint.sprintNumber}}</td>
+
+                                    <td>  &emsp;effort hours / days</td>
+                                </tr>
+                            </table>
+
+                            <br>
+                            <p>Sprint Burndown<p>
+                            <table id="table" border="1" width=100%>
+                                <thead>
+                                    <tr class="tr_header">
+                                         <th>Tasks</th>
+                                         <th colspan={{currentSprint.durationInDays}}>Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for t in taskDone %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+
+                                    </tr>
+                                    {% endfor %}
+                                    {% for t in taskProgress %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+
+                                    </tr>
+                                    {% endfor %}
+                                    {% for t in taskNot %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <br>
+                            <p>Effort Hours Spent<p>
+                            <table id="table" border="1" width=100%>
+                                      <thead>
+                                        <tr class="tr_header">
+                                            <th>Tasks</th>
+                                            <th>Effort Hours Spent</th>
+                                            <th>Estimated Effort Hours</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+
+
+                                    {% for t in taskDone %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        </tr>
+                                    {% endfor %}
+
+
+                                    {% for t in taskProgress %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        <tr>
+                                    {% endfor %}
+
+
+                                    {% for t in taskNot %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        </tr>
+                                    {% endfor %}
+
+                                      </tbody>
+                                    </table>
+
+                        </section>
+
+
+                        <!-- Logout-->
+                        <section id="logout" class="tm-section">
+                            <input class="button" type="button" onclick="location.href='/logout'" value="Logout" />
+                        </section>
+                        <footer>
+                            <p class="tm-copyright-p">Copyright &copy; <span class="tm-current-year">2019</span> Zebra</p>
+                        </footer>
+                    </div>
+
+                </div> <!-- Right column: content -->
+            </div>
+        </div> <!-- row -->
+    </div> <!-- container -->
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"></script>
+    <script type="text/javascript">
+        function myFunction() {
+            // Declare variables
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("mylist");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("pbitable");
+            tr = table.getElementsByTagName("tr");
+            // Loop through all table rows, and hide those who don't match the search query
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[3];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        $("input:checkbox:not(:checked)").each(function() {
+            var column = "table ." + $(this).attr("name");
+            $(column).hide();
+        });
+
+        $("input:checkbox").click(function(){
+            var column = "table ." + $(this).attr("name");
+            $(column).toggle();
+        });
+
+    </script>
+
+</body>
+</html>

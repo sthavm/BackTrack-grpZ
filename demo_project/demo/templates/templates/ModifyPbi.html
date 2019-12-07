@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+{% load staticfiles %}
+<head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+          <title>Modify Pbi</title>
+
+        <!-- load stylesheets -->
+        <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">                                      <!-- Bootstrap style -->
+        <link rel="stylesheet" href="{% static 'magnific-popup.css' %}">                                <!-- Magnific pop up style, http://dimsemenov.com/plugins/magnific-popup/ -->
+        <link rel="stylesheet" href="{% static 'main-style.css' %}">
+</head>
+
+
+
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="tm-left-right-container">
+                <div class="tm-blue-bg tm-left-column">
+                    <div class="tm-logo-div text-xs-center">
+                        <h1 class="tm-site-name">PENDRAGON</h1>
+                    </div>
+
+                </div>
+
+                <!-- Right column: content -->
+                <div class="tm-right-column">
+                    <div class="tm-content-div">
+                        <!-- Product Backlog section -->
+                        <form method="POST" action="">
+                          <h3 style="font-family:Arial, sans-serif; color:black;">Modify Product Backlog Item</h3>
+                          {% csrf_token %}
+                          <table>
+                            {{ form }}
+                          </table>
+                          <br>
+                          <input class="button" type="submit" value="Save"><br><br>
+                          <input class="button" type="button" onclick="location.href='./mod/delete'" value="Delete"><br><br>
+                          <input class="button" type="button" onclick="location.href='.'" value="Back"><br><br>
+                        </html>
+                      </div>
+                    </div>
+                    <!-- Logout-->
+
+
+
+                  </body>
