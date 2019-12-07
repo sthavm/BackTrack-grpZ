@@ -187,10 +187,17 @@ def modifyPbi(request, projectID, target=None):
 @dev_required
 def modifyTask(request, projectID, pbi,target=None):
     item  = Task.objects.filter(title=target).first()
+    currentSprint = item.sprint
+    sprintHoursLeft=currentSprint.hoursLeft()
+    prevEffortHours = item.effortHours
     address='/'+str(projectID)+'/main'
-    form = TaskModifyForm(request.POST or None, instance=item)
+    form = TaskModifyForm(request.POST or None, instance=item, sprintHoursLeft=sprintHoursLeft, prevEffortHours=prevEffortHours)
     if form.is_valid():
-        form.save()
+        modTask=form.save(commit=False)
+        if modTask.hourSpent == modTask.effortHours:
+            modTask.status = 'Completed'
+        modTask.save()
+        modTask.pbi.checkCompleted()
         return HttpResponseRedirect(address)
     return render(request, 'ModifyTask.html', {'form':form})
 
@@ -375,7 +382,7 @@ class mainPage(TemplateView):
             context = super().get_context_data(**kwargs)
             project=Project.objects.filter(projectID=projectID).first()
             pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
-            currentSprint=Sprint.objects.filter(project=projectID).filter(teamID=sprintView).filter(is_active=True).first()
+            currentSprint=Sprint.objects.filter(project=projectID).filter(teamID=sprintView).filter(is_current=True).first()
             if currentSprint==None:
                 currentPbiList=[]
             else:
@@ -394,13 +401,16 @@ class mainPage(TemplateView):
             context['prodowner']=True
             context['devteam']=False
             context['userID']=self.request.user
+            if currentSprint:
+                context['sprintHoursCompleted']=currentSprint.hoursCompleted()
+                context['sprintHoursLeft']=currentSprint.hoursLeft()
         elif self.request.user.is_manager:
             sprintView=self.request.user.manager.sprintView
             projectID=self.kwargs['projectID']
             context = super().get_context_data(**kwargs)
             project=Project.objects.filter(projectID=projectID).first()
             pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
-            currentSprint=Sprint.objects.filter(project=projectID).filter(is_current=True).first()
+            currentSprint=Sprint.objects.filter(project=projectID).filter(teamID=sprintView).filter(is_current=True).first()
             if currentSprint==None:
                 currentPbiList=[]
             else:
@@ -419,13 +429,16 @@ class mainPage(TemplateView):
             context['prodowner']=False
             context['devteam']=False
             context['userID']=self.request.user
+            if currentSprint:
+                context['sprintHoursCompleted']=currentSprint.hoursCompleted()
+                context['sprintHoursLeft']=currentSprint.hoursLeft()
         else:
             teamID=self.request.user.devteammember.teamID
             projectID=self.kwargs['projectID']
             context=super().get_context_data(**kwargs)
             project=Project.objects.get(projectID=projectID)
             pbiList=Pbi.objects.filter(projectID=projectID).filter(teamID=teamID).order_by('-priority')
-            currentSprint=Sprint.objects.filter(project=projectID).filter(teamID=teamID).filter(is_active=True).first()
+            currentSprint=Sprint.objects.filter(project=projectID).filter(teamID=teamID).filter(is_current=True).first()
             if currentSprint==None:
                 currentPbiList=[]
             else:
@@ -460,6 +473,9 @@ class mainPage(TemplateView):
             context['userID']=self.request.user
             context['hasCurrentSprint'] = hasCurrentSprint(self.request)
             context['hasActiveSprint'] = hasActiveSprint(self.request)
+            if currentSprint:
+                context['sprintHoursCompleted']=currentSprint.hoursCompleted()
+                context['sprintHoursLeft']=currentSprint.hoursLeft()
         # projectID=self.kwargs['projectID']
         # context = super().get_context_data(**kwargs)
         # project=Project.objects.filter(projectID=projectID).first()
@@ -624,20 +640,22 @@ def StartSprintLanding(request,projectID):
 @login_required
 @dev_required
 def CreateTask(request,projectID,target):
-    sprints=Sprint.objects.filter(project=projectID)
+    currentSprint=Sprint.objects.filter(project=projectID).filter(is_current=True).first()
     pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
+    sprintHoursLeft=currentSprint.hoursLeft()
     if request.method == "POST":
-        form = CreateTaskForm(request.POST)
+        form = CreateTaskForm(request.POST,sprintHoursLeft=sprintHoursLeft)
         if form.is_valid():
             newTask = form.save(commit=False)
             newTask.status='Not Started'
             newTask.pbi=pbi
+            newTask.sprint=currentSprint
             newTask.save()
             p=newTask.pbi
             address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
     else:
-        form = CreateTaskForm()
+        form = CreateTaskForm(sprintHoursLeft=sprintHoursLeft)
     return render(request, 'CreateTask.html',{'form':form})
 @login_required
 @dev_required

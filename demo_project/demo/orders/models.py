@@ -72,6 +72,19 @@ class Sprint(models.Model):
         self.is_current = False
         self.is_completed = True
 
+    def hoursCompleted(self):
+        hoursCompleted = 0
+        tasks = self.task_set.all()
+        for task in tasks:
+            hoursCompleted+=task.hourSpent
+        return hoursCompleted
+
+    def hoursLeft(self):
+        hoursDone = self.hoursCompleted()
+        hoursLeft = self.totalEffortHours - hoursDone
+        return hoursLeft
+
+
 
 class Pbi(models.Model):
     STATUS_CHOICES=[
@@ -91,6 +104,20 @@ class Pbi(models.Model):
         unique_together = (("title", "projectID"),)
     def __str__(self):
         return self.title
+    def checkCompleted(self):
+        tasks = self.task_set.all()
+        if tasks.count() == 0:
+            pass
+        else:
+            completed=True
+            for task in tasks:
+                if task.status != 'Completed':
+                    completed=False
+                    break
+            if completed:
+                self.status='Completed'
+        self.save()
+
 
 class Task(models.Model):
     STATUS_CHOICES=[
@@ -100,13 +127,14 @@ class Task(models.Model):
     ]
 
     pbi = models.ForeignKey(Pbi, on_delete=models.CASCADE)
+    sprint = models.ForeignKey(Sprint, on_delete=models.CASCADE)
     owner = models.ForeignKey(DevTeamMember,on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=2000)
     status = models.CharField(choices=STATUS_CHOICES, max_length=15)
     priority=models.DecimalField(max_digits=4,decimal_places=0)
     effortHours = models.IntegerField(validators=[MinValueValidator(0)])
-    hourSpent=models.IntegerField(validators=[MinValueValidator(0)],null=True,blank=True)
+    hourSpent=models.IntegerField(validators=[MinValueValidator(0)],blank=True, default=0)
     class Meta:
         unique_together = (("title", "pbi"),)
 

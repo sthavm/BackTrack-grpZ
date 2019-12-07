@@ -117,7 +117,7 @@
                                         {% endif %}
                                         {% if devteam == True %}
                                         <p>Your Estimated Effort Hours In This Sprint: {{sumEHour}}hr</p>
-                                        <p>Your Acutal Effort Hours In This Sprint: {{sumAHour}}hr</p>
+                                        <p>Your Actual Effort Hours In This Sprint: {{sumAHour}}hr</p>
                                         {% endif %}
                                     </header>
                                     <div id="wrapper">
@@ -321,25 +321,6 @@
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css" />
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"></script>
     <script type="text/javascript">
-        $(function () {
-            $("#pbitable").sortable({
-                items: 'tr:not(tr:first-child)',
-                cursor: 'pointer',
-                axis: 'y',
-                dropOnEmpty: false,
-                start: function (e, ui) {
-                    ui.item.addClass("selected");
-                },
-                stop: function (e, ui) {
-                    ui.item.removeClass("selected");
-                    $(this).find("tr").each(function (index) {
-                        if (index > 0) {
-                            $(this).find("td").eq(2).html(index);
-                        }
-                    });
-                }
-            });
-        });
         function myFunction() {
             // Declare variables
             var input, filter, table, tr, td, i, txtValue;
