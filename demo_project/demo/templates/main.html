@@ -204,7 +204,105 @@
                             <input class="button" type="button" onclick="location.href='./create-invite'" value="Add Developers to this Project" />
                         </section>
                         {% endif %}
+                        
+        
+                        <br>
+                        <!-- Project metrics section -->
+                        <section id="metrics" class="tm-section">
+                            <header>
+                                <h3 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project Metrics</h3>
+                            </header>
+                            <p>Velocity of current sprint<p>
+                            <table id="table" border="1" width=100%>
+                                <thead>
+                                    <tr class="tr_header">
+                                        <th>Sprint</th>
+                                        <th>Velocity</th>
+                                    </tr>
+                                </thead>
+                                <tr>
+                                    <td>{{currentSprint.sprintNumber}}</td>
+                                    
+                                    <td>  &emsp;effort hours / days</td>
+                                </tr>
+                            </table>
+                                
+                            <br>    
+                            <p>Sprint Burndown<p>
+                            <table id="table" border="1" width=100%>
+                                <thead>
+                                    <tr class="tr_header">
+                                         <th>Tasks</th>
+                                         <th colspan={{currentSprint.durationInDays}}>Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for t in taskDone %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+                                        
+                                    </tr>
+                                    {% endfor %}
+                                    {% for t in taskProgress %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+                                        
+                                    </tr>
+                                    {% endfor %}
+                                    {% for t in taskNot %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+                                        
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                            <br>
+                            <p>Effort Hours Spent<p>
+                            <table id="table" border="1" width=100%>
+                                      <thead>
+                                        <tr class="tr_header">
+                                            <th>Tasks</th>
+                                            <th>Effort Hours Spent</th>
+                                            <th>Estimated Effort Hours</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        
+                                       
+                                    {% for t in taskDone %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        </tr>
+                                    {% endfor %} 
+                                        
+                                        
+                                    {% for t in taskProgress %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        <tr>
+                                    {% endfor %}  
+                                        
+                                        
+                                    {% for t in taskNot %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        </tr>
+                                    {% endfor %}  
+                                        
+                                      </tbody>
+                                    </table>
 
+                        </section>
+        
+        
                         <!-- Logout-->
                         <section id="logout" class="tm-section">
                             <input class="button" type="button" onclick="location.href='/logout'" value="Logout" />
