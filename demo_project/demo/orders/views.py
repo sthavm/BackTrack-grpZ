@@ -33,7 +33,7 @@ def addPbi(request,projectID):
             newPbi = form.save(commit=False)
             newPbi.projectID=request.user.productowner.project
             newPbi.save()
-            address='/'+projectID+'/main'
+            address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
     else:
         form = PbiCreateForm()
@@ -56,7 +56,7 @@ def createProject(request):
             productOwner.project = newProject
             productOwner.save()
             projectID = newProject.projectID
-            address='/'+projectID+'/main'
+            address='/'+str(projectID)+'/main/create-invite'
             messages.info(request, 'You now become a Product Owner!')
             return HttpResponseRedirect(address)
     else:
@@ -80,6 +80,52 @@ class OnePbi(TemplateView):
         Pbi_list=Pbi.objects.all()
         context['pbi']=Pbi_list.filter(title=target).filter(projectID=projectID).first()
         return context
+class OneTask(TemplateView):
+    template_name="OneTask.html"
+
+    def get_context_data(self, **kwargs):
+        target=self.kwargs['target']
+        projectID=self.kwargs['projectID']
+        pbiTitle=self.kwargs['pbi']
+        context=super().get_context_data(**kwargs)
+        Pbi_list=Pbi.objects.all()
+        pbi=Pbi_list.filter(title=pbiTitle).filter(projectID=projectID).first()
+        task=Task.objects.filter(pbi=pbi).get(title=target)
+        context['task']=task
+        return context
+
+@login_required
+@dev_required
+def TakeOwnership(request, projectID,pbi,target):
+        Pbi_list=Pbi.objects.all()
+        PBI=Pbi_list.filter(title=pbi).filter(projectID=projectID).first()
+        task=Task.objects.filter(pbi=PBI).get(title=target)
+        if task.owner==None:
+            task.owner=request.user.devteammember
+            task.save()
+            address='/'+str(projectID)+'/main/'+pbi+'/task/'+target
+            return HttpResponseRedirect(address)
+        else:
+            messages.info(request, 'The Task Has Owner Already')
+            address='/'+str(projectID)+'/main/'+pbi+'/task/'+target
+            return HttpResponseRedirect(address)
+@login_required
+@dev_required
+def GiveUpOwnership(request, projectID,pbi,target):
+        Pbi_list=Pbi.objects.all()
+        PBI=Pbi_list.filter(title=pbi).filter(projectID=projectID).first()
+        task=Task.objects.filter(pbi=PBI).get(title=target)
+        if task.owner==request.user.devteammember:
+            task.owner=None
+            task.save()
+            address='/'+str(projectID)+'/main/'+pbi+'/task/'+target
+            return HttpResponseRedirect(address)
+        else:
+            messages.info(request, 'You Are Not The Owner')
+            address='/'+str(projectID)+'/main/'+pbi+'/task/'+target
+            return HttpResponseRedirect(address)
+
+
 
 class CurrentPbi(TemplateView):
     template_name="currentPbi.html"
@@ -93,7 +139,7 @@ class CurrentPbi(TemplateView):
         sprints=pbi.sprints.all()
         sprintNum=[]
         for s in sprints:
-            sprintNum+=str(s.sprintNumber)
+            sprintNum.append(s.sprintNumber)
         context['sprintNum']=sprintNum
         context['pbi']=pbi
         return context
@@ -110,9 +156,10 @@ def modifyPbi(request, projectID, target=None):
     return render(request, 'ModifyPbi.html', {'form':form})
 
 @login_required
+@dev_required
 def modifyTask(request, projectID, pbi,target=None):
     item  = Task.objects.filter(title=target).first()
-    address='/'+projectID+'/main'
+    address='/'+str(projectID)+'/main'
     form = TaskModifyForm(request.POST or None, instance=item)
     if form.is_valid():
         form.save()
@@ -122,12 +169,12 @@ def modifyTask(request, projectID, pbi,target=None):
 @login_required
 @prodowner_required
 def deletePbi(request,projectID, pk):
-
-    trash=get_object_or_404(Pbi, title=pk)
+    pbis=Pbi.objects.filter(projectID=projectID)
+    trash=pbis.get(title=pk)
     if request.method=='POST':
         form=PbiCreateForm(request.POST,instance=trash)
         trash.delete()
-        address='/'+projectID+'/main'
+        address='/'+str(projectID)+'/main'
         return HttpResponseRedirect(address)
     else:
         form=PbiCreateForm(instance=trash)
@@ -138,15 +185,17 @@ def deleteTask(request,projectID, pbi, target):
     tmp=Pbi.objects.filter(projectID=projectID).get(title=pbi)
     task=Task.objects.filter(pbi=tmp).filter(title=target)
     task.delete()
-    address='/'+projectID+'/main'
+    address='/'+str(projectID)+'/main'
     return HttpResponseRedirect(address)
-
+#manager's projects
 class AllProjects(ListView):
     model = Project
     template_name = "allprojects.html"
     paginate_by = 10
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        project=self.request.user.manager.project
+        context['project']=project.all()
         context['now'] = timezone.now()
         return context
 
@@ -166,13 +215,29 @@ class allSprint(TemplateView):
         taskDone=taskList.filter(status="Completed")
         taskProgress=taskList.filter(status="In Progress")
         taskNot=taskList.filter(status="Not Started")
+        #time tracking##########################################
+        if self.request.user.is_devteam:
+            myTask=taskList.filter(owner=self.request.user.devteammember)
+            sumEstimatedHour=0
+            sumActualHour=0
+            for t in myTask:
+                sumEstimatedHour+=t.effortHours
+                if t.hourSpent==None:
+                    continue
+                else:
+                    sumActualHour+=t.hourSpent
+            context['sumEHour']=sumEstimatedHour
+            context['sumAHour']=sumActualHour
+            context['devteam']=True
+        else:
+            context['devteam']=False
+        #################################################
         context['sprintList']=sprintList
         context['pbiList']=pbiList
         context['taskDone']=taskDone
         context['taskProgress']=taskProgress
         context['taskNot']=taskNot
         context['mapping']=mapping
-        print(mapping)
         return context
 
 class mainPage(TemplateView):
@@ -182,7 +247,7 @@ class mainPage(TemplateView):
         context = super().get_context_data(**kwargs)
         project=Project.objects.filter(projectID=projectID).first()
         pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
-        currentSprint=Sprint.objects.filter(project=projectID).filter(is_active=True).first()
+        currentSprint=Sprint.objects.filter(project=projectID).filter(is_current=True).first()
         if currentSprint==None:
             currentPbiList=[]
         else:
@@ -191,6 +256,24 @@ class mainPage(TemplateView):
         taskDone=taskList.filter(status="Completed")
         taskProgress=taskList.filter(status="In Progress")
         taskNot=taskList.filter(status="Not Started")
+        #time tracking##########################################
+        if self.request.user.is_devteam:
+            myTask=taskList.filter(owner=self.request.user.devteammember)
+            sumEstimatedHour=0
+            sumActualHour=0
+            for t in myTask:
+                sumEstimatedHour+=t.effortHours
+                if t.hourSpent==None:
+                    continue
+                else:
+                    sumActualHour+=t.hourSpent
+            context['sumEHour']=sumEstimatedHour
+            context['sumAHour']=sumActualHour
+            if self.request.user.is_devteam:
+                context['devteam']=True
+            else:
+                context['devteam']=False
+        #################################################
         cumsumList=[]
         cumsum=0
         for i in range (len(pbiList)):
@@ -215,8 +298,39 @@ class mainPage(TemplateView):
 
         context['taskNot']=taskNot
         context['NotStarted']="Not Started"
+
+        if self.request.user.is_prodowner:
+            context['hasCurrentSprint'] = hasCurrentSprint(self.request)
+            context['hasActiveSprint'] = hasActiveSprint(self.request)
         return context
 
+
+def hasCurrentSprint(request):
+    sprints=request.user.productowner.project.sprint_set.all()
+    for sprint in sprints:
+        if sprint.is_current:
+            if sprint.is_active:
+                sprint.active()
+                sprint.save()
+                if sprint.is_active:
+                    return True
+                else:
+                    return False
+            else:
+                return True
+    return False
+
+def hasActiveSprint(request):
+    sprints=request.user.productowner.project.sprint_set.all()
+    for sprint in sprints:
+        if sprint.is_active:
+            sprint.active()
+            sprint.save()
+            if sprint.is_active:
+                    return True
+            else:
+                    return False
+    return False
 
 class SignUpView(TemplateView):
     template_name = 'registration/signup.html'
@@ -264,20 +378,34 @@ class DevSignUpView(CreateView):
        return redirect('/redir')
 
 @login_required
+@prodowner_required
 def CreateSprint(request,projectID):
         if request.method == "POST":
             form = CreateSprintForm(request.POST)
             if form.is_valid():
                 newSprint = form.save(commit=False)
                 newSprint.project=request.user.productowner.project
-                newSprint.setEndDate()
-                newSprint.is_active=True
+                newSprint.is_active = False
+                newSprint.is_completed = False
+                newSprint.is_current = True
+                newSprint.sprintNumber=Sprint.objects.filter(project=request.user.productowner.project).count() + 1
                 newSprint.save()
-                address='/'+projectID+'/main'
+                address='/'+str(projectID)+'/main'
                 return HttpResponseRedirect(address)
         else:
             form = CreateSprintForm()
         return render(request, 'CreateSprint.html',{'form':form})
+
+@login_required
+@prodowner_required
+def StartSprintLanding(request,projectID):
+    sprints=request.user.productowner.project.sprint_set.all()
+    for sprint in sprints:
+        if sprint.is_current:
+            sprint.activate()
+            sprint.save()
+    address='/'+str(projectID)+'/main'
+    return HttpResponseRedirect(address)
 
 @login_required
 @dev_required
@@ -288,12 +416,11 @@ def CreateTask(request,projectID,target):
         form = CreateTaskForm(request.POST)
         if form.is_valid():
             newTask = form.save(commit=False)
-            newTask.creator=request.user.devteammember
             newTask.status='Not Started'
             newTask.pbi=pbi
             newTask.save()
             p=newTask.pbi
-            address='/'+projectID+'/main'
+            address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
     else:
         form = CreateTaskForm()
@@ -301,46 +428,72 @@ def CreateTask(request,projectID,target):
 
 def CreateSprintLanding(request,projectID):
     sprints=request.user.productowner.project.sprint_set.all()
-    hasActiveSprint=False
+    hasCurrentSprint=False
     for sprint in sprints:
-        sprint.active()
-        if sprint.is_active == True:
-            hasActiveSprint = True
+        if sprint.is_current == True:
+            hasCurrentSprint = True
             break
-        else:
-            hasActiveSprint = False
-
-    if hasActiveSprint:
-            address='/'+projectID+'/main'
-            messages.info(request, 'Project has Active Sprint already!')
+    if hasCurrentSprint:
+            address='/'+str(projectID)+'/main'
+            messages.info(request, 'This project already has a Sprint that is either being populated or is already active. This sprint must end before you can create a new one.')
             return HttpResponseRedirect(address)
     else:
         return HttpResponseRedirect('/'+projectID+'/main/createSprint')
 
 @login_required
 @prodowner_required
+def EndSprintLanding(request,projectID):
+    sprints=request.user.productowner.project.sprint_set.all()
+    for sprint in sprints:
+        if sprint.is_current:
+            if sprint.is_active == True:
+                sprint.active()
+                if sprint.is_active == True:
+                    sprint.deactivate()
+                    sprint.save()
+                    break
+    address='/'+str(projectID)+'/main'
+    return HttpResponseRedirect(address)
+
+@login_required
+@prodowner_required
 def SendInvite(request,projectID):
-    currentUser = request.user
-    project = currentUser.productowner.project
+    project = request.user.productowner.project
+    InviteModelFormSet = modelformset_factory(InviteMessage)
+
+
+    managers=Manager.objects.all()
+    uninvolvedManagers = []
+    for manager in managers:
+        if project not in manager.project.all():
+            uninvolvedManagers.append(manager)
     if request.method == "POST":
-        form = CreateInviteForm(request.POST)
-        if form.is_valid():
-            newInvite = form.save(commit=False)
-            newInvite.project=project
-            newInvite.save()
-            form.save_m2m()
-            address='/'+projectID+'/main'
+        formA = CreateDevInviteForm(request.POST)
+        formB = CreateManagerInviteForm(request.POST,manList=uninvolvedManagers)
+        a_valid = formA.is_valid()
+        b_valid = formB.is_valid()
+        if a_valid and b_valid:
+            newDevInvite = formA.save(commit=False)
+            newDevInvite.project=project
+            newDevInvite.save()
+            formA.save_m2m()
+            newManagerInvite = formB.save(commit=False)
+            newManagerInvite.project=project
+            newManagerInvite.save()
+            formB.save_m2m()
+            address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
     else:
-        form = CreateInviteForm()
-    return render(request, 'SendInvite.html',{'form':form})
+        formA = CreateDevInviteForm()
+        formB = CreateManagerInviteForm()
+    return render(request, 'SendInvite.html',{'formA':formA,'formB':formB})
 
 
 def BringPbiToSprint(request,projectID,target):
     sprints=Sprint.objects.filter(project=projectID)
     pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
     for s in sprints:
-        if s.is_active == True:
+        if s.is_current == True:
             allCPbi=s.pbi_set.all()
             for p in allCPbi:
                 if p==pbi:
@@ -349,18 +502,18 @@ def BringPbiToSprint(request,projectID,target):
             pbi.status="In Progress"
             pbi.save()
             pbi.sprints.add(s)
-            address='/'+projectID+'/main'
+            address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
-    messages.info(request, 'No Active Sprint')
+    messages.info(request, 'No Current Sprint')
     return HttpResponseRedirect('/'+projectID+'/main/'+'pbi/'+target)
 
 def RemoveCurrentPbi(request, projectID,target):
     sprints=Sprint.objects.filter(project=projectID)
     pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
     for s in sprints:
-        if s.is_active == True:
+        if s.is_current == True:
             pbi.sprints.remove(s)
-            address='/'+projectID+'/main'
+            address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
 
 @login_required
@@ -370,7 +523,6 @@ def redir(request):
     isDev = currentUser.is_devteam
     isProdOwn = currentUser.is_prodowner
     if (isManager):
-        messages.info(request, 'You are a Manager!')
         return redirect('/projects')
     elif (isDev):
         if (currentUser.devteammember.project == None):
@@ -378,12 +530,12 @@ def redir(request):
             return redirect('/noproject')
         else:
             projectID = currentUser.devteammember.project.projectID
-            address='/'+projectID+'/main'
+            address='/'+str(projectID)+'/main'
             messages.info(request, 'You are a Developer!')
             return redirect(address)
     elif (isProdOwn):
         projectID = currentUser.productowner.project.projectID
-        address='/'+projectID+'/main'
+        address='/'+str(projectID)+'/main'
         messages.info(request, 'You are a Product Owner!')
         return redirect(address)
 
