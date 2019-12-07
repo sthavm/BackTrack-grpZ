@@ -251,7 +251,7 @@ class AllProjects(ListView):
         context['now'] = timezone.now()
         return context
 
-        
+
 
 class allSprint(TemplateView):
     template_name="AllSprint.html"
@@ -311,7 +311,7 @@ class allSprint(TemplateView):
             context['devteam']=True
             myTask=taskList.filter(owner=self.request.user.devteammember)
             sumEstimatedHour=0
-            sumAcutalHour=0
+            sumActualHour=0
             for t in myTask:
                 sumEstimatedHour+=t.effortHours
                 if t.hourSpent==None:
@@ -319,7 +319,7 @@ class allSprint(TemplateView):
                 else:
                     sumActualHour+=t.hourSpent
             context['sumEHour']=sumEstimatedHour
-            context['sumAHour']=sumAcutalHour
+            context['sumAHour']=sumActualHour
         context['sprintList']=sprintList
         context['pbiList']=pbiList
         context['taskDone']=taskDone
@@ -409,7 +409,7 @@ class mainPage(TemplateView):
             context['devteam']=False
             context['userID']=self.request.user
             context['currentSprint'] = currentSprint
-           
+
             if currentSprint:
                 sortedChanges = sorted(currentSprint.changes.items(), key=lambda kv: kv[0])
                 context['changes'] = collections.OrderedDict(sortedChanges)
@@ -465,7 +465,7 @@ class mainPage(TemplateView):
             if self.request.user.is_devteam:
                 myTask=taskList.filter(owner=self.request.user.devteammember)
                 sumEstimatedHour=0
-                sumAcutalHour=0
+                sumActualHour=0
                 for t in myTask:
                     sumEstimatedHour+=t.effortHours
                     if t.hourSpent==None:
@@ -473,7 +473,7 @@ class mainPage(TemplateView):
                     else:
                         sumActualHour+=t.hourSpent
                 context['sumEHour']=sumEstimatedHour
-                context['sumAHour']=sumAcutalHour
+                context['sumAHour']=sumActualHour
                 context['devteam']=True
             #################################################
             cumsumList=[]
