@@ -114,6 +114,8 @@
                                         <p>No Active Sprint<p>
                                         {% else %}
                                         <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
+                                        <p>Start date: {{currentSprint.startDate}}</p>
+                                        <p>End Date: {{currentSprint.endDate}}</p>
                                         {% endif %}
                                         {% if devteam == True %}
                                         <p>Your Estimated Effort Hours In This Sprint: {{sumEHour}}hr</p>
