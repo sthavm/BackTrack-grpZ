@@ -304,7 +304,7 @@ class allSprint(TemplateView):
             context['devteam']=True
             myTask=taskList.filter(owner=self.request.user.devteammember)
             sumEstimatedHour=0
-            sumAcutalHour=0
+            sumActualHour=0
             for t in myTask:
                 sumEstimatedHour+=t.effortHours
                 if t.hourSpent==None:
@@ -312,7 +312,7 @@ class allSprint(TemplateView):
                 else:
                     sumActualHour+=t.hourSpent
             context['sumEHour']=sumEstimatedHour
-            context['sumAHour']=sumAcutalHour
+            context['sumAHour']=sumActualHour
         context['sprintList']=sprintList
         context['pbiList']=pbiList
         context['taskDone']=taskDone
@@ -451,7 +451,7 @@ class mainPage(TemplateView):
             if self.request.user.is_devteam:
                 myTask=taskList.filter(owner=self.request.user.devteammember)
                 sumEstimatedHour=0
-                sumAcutalHour=0
+                sumActualHour=0
                 for t in myTask:
                     sumEstimatedHour+=t.effortHours
                     if t.hourSpent==None:
@@ -459,7 +459,7 @@ class mainPage(TemplateView):
                     else:
                         sumActualHour+=t.hourSpent
                 context['sumEHour']=sumEstimatedHour
-                context['sumAHour']=sumAcutalHour
+                context['sumAHour']=sumActualHour
                 context['devteam']=True
             #################################################
             cumsumList=[]
