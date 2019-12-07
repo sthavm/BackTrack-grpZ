@@ -39,7 +39,7 @@ class TaskModifyForm(ModelForm):
         super(TaskModifyForm,self).__init__(*args,**kwargs)
     def clean(self):
         cleaned_data = super(TaskModifyForm, self).clean()
-        hoursSpent = cleaned_data.get("hoursSpent")
+        hoursSpent = cleaned_data.get("hourSpent")
         effortHours = cleaned_data.get("effortHours")
         if hoursSpent > effortHours:
             raise forms.ValidationError("Effort hours completed must be equal to or less than total effort hours.")

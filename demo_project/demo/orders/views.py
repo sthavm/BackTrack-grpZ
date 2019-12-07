@@ -386,8 +386,8 @@ class mainPage(TemplateView):
             if currentSprint==None:
                 currentPbiList=[]
             else:
-                currentPbiList=Pbi.objects.filter(sprints=currentSprint)
-            taskList=Task.objects.filter(pbi__in=currentPbiList)
+                currentPbiList=currentSprint.pbi_set.all()
+            taskList=Task.objects.filter(sprint=currentSprint)
             taskDone=taskList.filter(status="Completed")
             taskProgress=taskList.filter(status="In Progress")
             taskNot=taskList.filter(status="Not Started")
@@ -414,8 +414,8 @@ class mainPage(TemplateView):
             if currentSprint==None:
                 currentPbiList=[]
             else:
-                currentPbiList=Pbi.objects.filter(sprints=currentSprint)
-            taskList=Task.objects.filter(pbi__in=currentPbiList)
+                currentPbiList=currentSprint.pbi_set.all()
+            taskList=Task.objects.filter(sprint=currentSprint)
             taskDone=taskList.filter(status="Completed")
             taskProgress=taskList.filter(status="In Progress")
             taskNot=taskList.filter(status="Not Started")
@@ -442,8 +442,8 @@ class mainPage(TemplateView):
             if currentSprint==None:
                 currentPbiList=[]
             else:
-                currentPbiList=Pbi.objects.filter(sprints=currentSprint).filter(teamID=teamID)
-            taskList=Task.objects.filter(pbi__in=currentPbiList)
+                currentPbiList=currentSprint.pbi_set.all()
+            taskList=Task.objects.filter(sprint=currentSprint)
             taskDone=taskList.filter(status="Completed")
             taskProgress=taskList.filter(status="In Progress")
             taskNot=taskList.filter(status="Not Started")
