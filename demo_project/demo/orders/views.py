@@ -11,6 +11,30 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth import login, logout
 
 # Create your views here.
+def ChangeTeam(request,projectID):
+    user=request.user.devteammember
+    form=TeamForm(request.POST or None, instance=user)
+    if form.is_valid():
+        form.save()
+        address='/'+str(projectID)+'/main'
+        return HttpResponseRedirect(address)
+    return render(request, 'ChangeTeam.html',{'form':form})
+def ChangeView(request,projectID):
+    if request.user.is_prodowner:
+        user=request.user.productowner
+        form=ProductOwnerViewForm(request.POST or None, instance=user)
+        if form.is_valid():
+            form.save()
+            address='/'+str(projectID)+'/main'
+            return HttpResponseRedirect(address)
+    elif request.user.is_manager:
+        user=request.user.manager
+        form=ManagerViewForm(request.POST or None, instance=user)
+        if form.is_valid():
+            form.save()
+            address='/'+str(projectID)+'/main'
+            return HttpResponseRedirect(address)
+    return render(request, 'ChangeView.html',{'form':form})
 
 class HomePage(TemplateView):
     template_name = 'homepage.html'
@@ -64,8 +88,12 @@ def createProject(request):
     return render(request, 'CreateProject.html',{'form':form})
 
 def AcceptInviteLanding(request,projectID):
-    request.user.devteammember.project = Project.objects.filter(projectID=projectID).first()
-    request.user.devteammember.save()
+    if request.user.is_devteam:
+        request.user.devteammember.project = Project.objects.filter(projectID=projectID).first()
+        request.user.devteammember.save()
+    if request.user.is_manager:
+        request.user.manager.project.add(Project.objects.filter(projectID=projectID).first())
+        request.user.manager.save()
     return HttpResponseRedirect('/'+projectID+'/main')
 
 
@@ -188,38 +216,88 @@ def deleteTask(request,projectID, pbi, target):
     address='/'+str(projectID)+'/main'
     return HttpResponseRedirect(address)
 #manager's projects
+
 class AllProjects(ListView):
     model = Project
     template_name = "allprojects.html"
     paginate_by = 10
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project=self.request.user.manager.project
+        currentUser = self.request.user
+        project=currentUser.manager.project
+        distinctProjects=[]
+        distinctInvites=[]
+        relatedInvites = currentUser.invitemessage_set.all()
+        for invite in relatedInvites:
+            if invite.project not in distinctProjects:
+                distinctProjects.append(invite.project)
+                distinctInvites.append(invite)
+        context['invites']=distinctInvites
         context['project']=project.all()
         context['now'] = timezone.now()
         return context
 
+        
+
 class allSprint(TemplateView):
     template_name="AllSprint.html"
     def get_context_data(self, **kwargs):
-        projectID=self.kwargs['projectID']
-        context = super().get_context_data(**kwargs)
-        sprintList=Sprint.objects.filter(project=projectID).order_by('sprintNumber')
-        pbiList=Pbi.objects.filter(sprints__in=sprintList)
-        mapping=[]
-        for s in sprintList:
-            for p in pbiList:
-                tmp=(s,p, Pbi.objects.filter(pk=p.pk).filter(sprints=s).exists())
-                mapping.append(tmp)
-        taskList=Task.objects.filter(pbi__in=pbiList)
-        taskDone=taskList.filter(status="Completed")
-        taskProgress=taskList.filter(status="In Progress")
-        taskNot=taskList.filter(status="Not Started")
-        #time tracking##########################################
-        if self.request.user.is_devteam:
+        if self.request.user.is_prodowner:
+            sprintView=self.request.user.productowner.sprintView
+            projectID=self.kwargs['projectID']
+            context = super().get_context_data(**kwargs)
+            sprintList=Sprint.objects.filter(project=projectID).filter(teamID=sprintView).order_by('sprintNumber')
+            pbiList=Pbi.objects.filter(sprints__in=sprintList)
+            mapping=[]
+            for s in sprintList:
+                for p in pbiList:
+                    tmp=(s,p, Pbi.objects.filter(pk=p.pk).filter(sprints=s).exists())
+                    mapping.append(tmp)
+            taskList=Task.objects.filter(pbi__in=pbiList)
+            taskDone=taskList.filter(status="Completed")
+            taskProgress=taskList.filter(status="In Progress")
+            taskNot=taskList.filter(status="Not Started")
+            context['sprintView']=sprintView
+            context['prodowner']=True
+            context['devteam']=False
+        elif self.request.user.is_manager:
+            sprintView=self.request.user.manager.sprintView
+            projectID=self.kwargs['projectID']
+            context = super().get_context_data(**kwargs)
+            sprintList=Sprint.objects.filter(project=projectID).filter(teamID=sprintView).order_by('sprintNumber')
+            pbiList=Pbi.objects.filter(sprints__in=sprintList)
+            mapping=[]
+            for s in sprintList:
+                for p in pbiList:
+                    tmp=(s,p, Pbi.objects.filter(pk=p.pk).filter(sprints=s).exists())
+                    mapping.append(tmp)
+            taskList=Task.objects.filter(pbi__in=pbiList)
+            taskDone=taskList.filter(status="Completed")
+            taskProgress=taskList.filter(status="In Progress")
+            taskNot=taskList.filter(status="Not Started")
+            context['sprintView']=sprintView
+            context['prodowner']=False
+            context['devteam']=False
+        else:
+            teamID=self.request.user.devteammember.teamID
+            projectID=self.kwargs['projectID']
+            context = super().get_context_data(**kwargs)
+            sprintList=Sprint.objects.filter(project=projectID).filter(teamID=teamID).order_by('sprintNumber')
+            pbiList=Pbi.objects.filter(sprints__in=sprintList)
+            mapping=[]
+            for s in sprintList:
+                for p in pbiList:
+                    tmp=(s,p, Pbi.objects.filter(pk=p.pk).filter(sprints=s).exists())
+                    mapping.append(tmp)
+            taskList=Task.objects.filter(pbi__in=pbiList)
+            taskDone=taskList.filter(status="Completed")
+            taskProgress=taskList.filter(status="In Progress")
+            taskNot=taskList.filter(status="Not Started")
+            context['prodowner']=False
+            context['devteam']=True
             myTask=taskList.filter(owner=self.request.user.devteammember)
             sumEstimatedHour=0
-            sumActualHour=0
+            sumAcutalHour=0
             for t in myTask:
                 sumEstimatedHour+=t.effortHours
                 if t.hourSpent==None:
@@ -227,63 +305,202 @@ class allSprint(TemplateView):
                 else:
                     sumActualHour+=t.hourSpent
             context['sumEHour']=sumEstimatedHour
-            context['sumAHour']=sumActualHour
-            context['devteam']=True
-        else:
-            context['devteam']=False
-        #################################################
+            context['sumAHour']=sumAcutalHour
         context['sprintList']=sprintList
         context['pbiList']=pbiList
         context['taskDone']=taskDone
         context['taskProgress']=taskProgress
         context['taskNot']=taskNot
         context['mapping']=mapping
+        print(mapping)
         return context
+
+
+
+
+
+
+
+
+
+
+
+
+        # projectID=self.kwargs['projectID']
+        # context = super().get_context_data(**kwargs)
+        # sprintList=Sprint.objects.filter(project=projectID).order_by('sprintNumber')
+        # pbiList=Pbi.objects.filter(sprints__in=sprintList)
+        # mapping=[]
+        # for s in sprintList:
+        #     for p in pbiList:
+        #         tmp=(s,p, Pbi.objects.filter(pk=p.pk).filter(sprints=s).exists())
+        #         mapping.append(tmp)
+        # taskList=Task.objects.filter(pbi__in=pbiList)
+        # taskDone=taskList.filter(status="Completed")
+        # taskProgress=taskList.filter(status="In Progress")
+        # taskNot=taskList.filter(status="Not Started")
+        # #time tracking##########################################
+        # myTask=taskList.filter(owner=self.request.user.devteammember)
+        # sumEstimatedHour=0
+        # sumAcutalHour=0
+        # for t in myTask:
+        #     sumEstimatedHour+=t.effortHours
+        #     if t.hourSpent==None:
+        #         continue
+        #     else:
+        #         sumActualHour+=t.hourSpent
+        # context['sumEHour']=sumEstimatedHour
+        # context['sumAHour']=sumAcutalHour
+        # if self.request.user.is_devteam:
+        #     context['devteam']=True
+        # else:
+        #     context['devteam']=False
+        # #################################################
+        # context['sprintList']=sprintList
+        # context['pbiList']=pbiList
+        # context['taskDone']=taskDone
+        # context['taskProgress']=taskProgress
+        # context['taskNot']=taskNot
+        # context['mapping']=mapping
+        # print(mapping)
+        # return context
 
 class mainPage(TemplateView):
     template_name="main.html"
     def get_context_data(self, **kwargs):
-        projectID=self.kwargs['projectID']
-        context = super().get_context_data(**kwargs)
-        project=Project.objects.filter(projectID=projectID).first()
-        pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
-        currentSprint=Sprint.objects.filter(project=projectID).filter(is_current=True).first()
-        if currentSprint==None:
-            currentPbiList=[]
-        else:
-            currentPbiList=Pbi.objects.filter(sprints=currentSprint)
-        taskList=Task.objects.filter(pbi__in=currentPbiList)
-        taskDone=taskList.filter(status="Completed")
-        taskProgress=taskList.filter(status="In Progress")
-        taskNot=taskList.filter(status="Not Started")
-        #time tracking##########################################
-        if self.request.user.is_devteam:
-            myTask=taskList.filter(owner=self.request.user.devteammember)
-            sumEstimatedHour=0
-            sumActualHour=0
-            for t in myTask:
-                sumEstimatedHour+=t.effortHours
-                if t.hourSpent==None:
-                    continue
-                else:
-                    sumActualHour+=t.hourSpent
-            context['sumEHour']=sumEstimatedHour
-            context['sumAHour']=sumActualHour
-            if self.request.user.is_devteam:
-                context['devteam']=True
-            else:
-                context['devteam']=False
-        #################################################
-        cumsumList=[]
-        cumsum=0
-        for i in range (len(pbiList)):
-            cumsum+=pbiList[i].storyPt
-            cumsumList.append(int(cumsum))
-        zipped=zip(pbiList, cumsumList)
+
         if self.request.user.is_prodowner:
+            sprintView=self.request.user.productowner.sprintView
+            projectID=self.kwargs['projectID']
+            context = super().get_context_data(**kwargs)
+            project=Project.objects.filter(projectID=projectID).first()
+            pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
+            currentSprint=Sprint.objects.filter(project=projectID).filter(teamID=sprintView).filter(is_active=True).first()
+            if currentSprint==None:
+                currentPbiList=[]
+            else:
+                currentPbiList=Pbi.objects.filter(sprints=currentSprint)
+            taskList=Task.objects.filter(pbi__in=currentPbiList)
+            taskDone=taskList.filter(status="Completed")
+            taskProgress=taskList.filter(status="In Progress")
+            taskNot=taskList.filter(status="Not Started")
+            cumsumList=[]
+            cumsum=0
+            for i in range (len(pbiList)):
+                cumsum+=pbiList[i].storyPt
+                cumsumList.append(int(cumsum))
+            zipped=zip(pbiList, cumsumList)
+            context['sprintView']=sprintView
             context['prodowner']=True
-        else:
+            context['devteam']=False
+            context['userID']=self.request.user
+        elif self.request.user.is_manager:
+            sprintView=self.request.user.manager.sprintView
+            projectID=self.kwargs['projectID']
+            context = super().get_context_data(**kwargs)
+            project=Project.objects.filter(projectID=projectID).first()
+            pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
+            currentSprint=Sprint.objects.filter(project=projectID).filter(is_current=True).first()
+            if currentSprint==None:
+                currentPbiList=[]
+            else:
+                currentPbiList=Pbi.objects.filter(sprints=currentSprint)
+            taskList=Task.objects.filter(pbi__in=currentPbiList)
+            taskDone=taskList.filter(status="Completed")
+            taskProgress=taskList.filter(status="In Progress")
+            taskNot=taskList.filter(status="Not Started")
+            cumsumList=[]
+            cumsum=0
+            for i in range (len(pbiList)):
+                cumsum+=pbiList[i].storyPt
+                cumsumList.append(int(cumsum))
+            zipped=zip(pbiList, cumsumList)
+            context['sprintView']=sprintView
             context['prodowner']=False
+            context['devteam']=False
+            context['userID']=self.request.user
+        else:
+            teamID=self.request.user.devteammember.teamID
+            projectID=self.kwargs['projectID']
+            context=super().get_context_data(**kwargs)
+            project=Project.objects.get(projectID=projectID)
+            pbiList=Pbi.objects.filter(projectID=projectID).filter(teamID=teamID).order_by('-priority')
+            currentSprint=Sprint.objects.filter(project=projectID).filter(teamID=teamID).filter(is_active=True).first()
+            if currentSprint==None:
+                currentPbiList=[]
+            else:
+                currentPbiList=Pbi.objects.filter(sprints=currentSprint).filter(teamID=teamID)
+            taskList=Task.objects.filter(pbi__in=currentPbiList)
+            taskDone=taskList.filter(status="Completed")
+            taskProgress=taskList.filter(status="In Progress")
+            taskNot=taskList.filter(status="Not Started")
+            #Individual time tracking##########################################
+            if self.request.user.is_devteam:
+                myTask=taskList.filter(owner=self.request.user.devteammember)
+                sumEstimatedHour=0
+                sumAcutalHour=0
+                for t in myTask:
+                    sumEstimatedHour+=t.effortHours
+                    if t.hourSpent==None:
+                        continue
+                    else:
+                        sumActualHour+=t.hourSpent
+                context['sumEHour']=sumEstimatedHour
+                context['sumAHour']=sumAcutalHour
+                context['devteam']=True
+            #################################################
+            cumsumList=[]
+            cumsum=0
+            for i in range (len(pbiList)):
+                cumsum+=pbiList[i].storyPt
+                cumsumList.append(int(cumsum))
+            zipped=zip(pbiList, cumsumList)
+            context['prodowner']=False
+            context['teamID']=teamID
+            context['userID']=self.request.user
+            context['hasCurrentSprint'] = hasCurrentSprint(self.request)
+            context['hasActiveSprint'] = hasActiveSprint(self.request)
+        # projectID=self.kwargs['projectID']
+        # context = super().get_context_data(**kwargs)
+        # project=Project.objects.filter(projectID=projectID).first()
+        # pbiList=Pbi.objects.filter(projectID=projectID).order_by('-priority')
+        # currentSprint=Sprint.objects.filter(project=projectID).filter(is_active=True).first()
+        # if currentSprint==None:
+        #     currentPbiList=[]
+        # else:
+        #     currentPbiList=Pbi.objects.filter(sprints=currentSprint)
+        # taskList=Task.objects.filter(pbi__in=currentPbiList)
+        # taskDone=taskList.filter(status="Completed")
+        # taskProgress=taskList.filter(status="In Progress")
+        # taskNot=taskList.filter(status="Not Started")
+        # #time tracking##########################################
+        # if self.request.user.is_devteam:
+        #     myTask=taskList.filter(owner=self.request.user.devteammember)
+        #     sumEstimatedHour=0
+        #     sumAcutalHour=0
+        #     for t in myTask:
+        #         sumEstimatedHour+=t.effortHours
+        #         if t.hourSpent==None:
+        #             continue
+        #         else:
+        #             sumActualHour+=t.hourSpent
+        #     context['sumEHour']=sumEstimatedHour
+        #     context['sumAHour']=sumAcutalHour
+        #     if self.request.user.is_devteam:
+        #         context['devteam']=True
+        #     else:
+        #         context['devteam']=False
+        # #################################################
+        # cumsumList=[]
+        # cumsum=0
+        # for i in range (len(pbiList)):
+        #     cumsum+=pbiList[i].storyPt
+        #     cumsumList.append(int(cumsum))
+        # zipped=zip(pbiList, cumsumList)
+        # if self.request.user.is_prodowner:
+        #     context['prodowner']=True
+        # else:
+        #     context['prodowner']=False
         context['pbi_list'] = zipped
         context['currentSprint']=currentSprint
         context['project']=project
@@ -298,17 +515,13 @@ class mainPage(TemplateView):
 
         context['taskNot']=taskNot
         context['NotStarted']="Not Started"
-
-        if self.request.user.is_prodowner:
-            context['hasCurrentSprint'] = hasCurrentSprint(self.request)
-            context['hasActiveSprint'] = hasActiveSprint(self.request)
         return context
 
-
 def hasCurrentSprint(request):
-    sprints=request.user.productowner.project.sprint_set.all()
+    sprints=request.user.devteammember.project.sprint_set.all()
+    teamID=request.user.devteammember.teamID
     for sprint in sprints:
-        if sprint.is_current:
+        if sprint.is_current and sprint.teamID==teamID:
             if sprint.is_active:
                 sprint.active()
                 sprint.save()
@@ -321,9 +534,10 @@ def hasCurrentSprint(request):
     return False
 
 def hasActiveSprint(request):
-    sprints=request.user.productowner.project.sprint_set.all()
+    sprints=request.user.devteammember.project.sprint_set.all()
+    teamID=request.user.devteammember.teamID
     for sprint in sprints:
-        if sprint.is_active:
+        if sprint.is_active and sprint.teamID==teamID:
             sprint.active()
             sprint.save()
             if sprint.is_active:
@@ -378,35 +592,35 @@ class DevSignUpView(CreateView):
        return redirect('/redir')
 
 @login_required
-@prodowner_required
+@dev_required
 def CreateSprint(request,projectID):
         if request.method == "POST":
             form = CreateSprintForm(request.POST)
             if form.is_valid():
                 newSprint = form.save(commit=False)
-                newSprint.project=request.user.productowner.project
+                newSprint.project=request.user.devteammember.project
                 newSprint.is_active = False
                 newSprint.is_completed = False
                 newSprint.is_current = True
-                newSprint.sprintNumber=Sprint.objects.filter(project=request.user.productowner.project).count() + 1
+                newSprint.teamID=request.user.devteammember.teamID
+                newSprint.sprintNumber=Sprint.objects.filter(project=request.user.devteammember.project).filter(teamID=request.user.devteammember.teamID).count() + 1
                 newSprint.save()
                 address='/'+str(projectID)+'/main'
                 return HttpResponseRedirect(address)
         else:
             form = CreateSprintForm()
         return render(request, 'CreateSprint.html',{'form':form})
-
 @login_required
-@prodowner_required
+@dev_required
 def StartSprintLanding(request,projectID):
-    sprints=request.user.productowner.project.sprint_set.all()
+    sprints=request.user.devteammember.project.sprint_set.all()
+    teamID=request.user.devteammember.teamID
     for sprint in sprints:
-        if sprint.is_current:
+        if sprint.is_current and sprint.teamID==teamID:
             sprint.activate()
             sprint.save()
     address='/'+str(projectID)+'/main'
     return HttpResponseRedirect(address)
-
 @login_required
 @dev_required
 def CreateTask(request,projectID,target):
@@ -425,12 +639,14 @@ def CreateTask(request,projectID,target):
     else:
         form = CreateTaskForm()
     return render(request, 'CreateTask.html',{'form':form})
-
+@login_required
+@dev_required
 def CreateSprintLanding(request,projectID):
-    sprints=request.user.productowner.project.sprint_set.all()
+    teamID=request.user.devteammember.teamID
+    sprints=request.user.devteammember.project.sprint_set.all()
     hasCurrentSprint=False
     for sprint in sprints:
-        if sprint.is_current == True:
+        if sprint.is_current == True and sprint.teamID==teamID:
             hasCurrentSprint = True
             break
     if hasCurrentSprint:
@@ -439,13 +655,13 @@ def CreateSprintLanding(request,projectID):
             return HttpResponseRedirect(address)
     else:
         return HttpResponseRedirect('/'+projectID+'/main/createSprint')
-
 @login_required
-@prodowner_required
+@dev_required
 def EndSprintLanding(request,projectID):
-    sprints=request.user.productowner.project.sprint_set.all()
+    sprints=request.user.devteammember.project.sprint_set.all()
+    teamID=request.user.devteammember.teamID
     for sprint in sprints:
-        if sprint.is_current:
+        if sprint.is_current and sprint.teamID==teamID:
             if sprint.is_active == True:
                 sprint.active()
                 if sprint.is_active == True:
@@ -454,46 +670,45 @@ def EndSprintLanding(request,projectID):
                     break
     address='/'+str(projectID)+'/main'
     return HttpResponseRedirect(address)
-
 @login_required
 @prodowner_required
 def SendInvite(request,projectID):
     project = request.user.productowner.project
-    InviteModelFormSet = modelformset_factory(InviteMessage)
-
-
+    idleDevs=DevTeamMember.objects.filter(project=None)
     managers=Manager.objects.all()
     uninvolvedManagers = []
     for manager in managers:
         if project not in manager.project.all():
             uninvolvedManagers.append(manager)
+    dev_queryset = User.objects.filter(devteammember__in=idleDevs)
+    manager_queryset = User.objects.filter(manager__in=uninvolvedManagers)
     if request.method == "POST":
-        formA = CreateDevInviteForm(request.POST)
-        formB = CreateManagerInviteForm(request.POST,manList=uninvolvedManagers)
-        a_valid = formA.is_valid()
-        b_valid = formB.is_valid()
-        if a_valid and b_valid:
-            newDevInvite = formA.save(commit=False)
+        devForm = CreateInviteForm(request.POST, prefix='dev',set=dev_queryset)
+        managerForm = CreateInviteForm(request.POST,prefix='manager',set=manager_queryset)
+        dev_valid = devForm.is_valid()
+        manager_valid = managerForm.is_valid()
+        if dev_valid and manager_valid:
+            newDevInvite = devForm.save(commit=False)
             newDevInvite.project=project
             newDevInvite.save()
-            formA.save_m2m()
-            newManagerInvite = formB.save(commit=False)
+            devForm.save_m2m()
+            newManagerInvite = managerForm.save(commit=False)
             newManagerInvite.project=project
             newManagerInvite.save()
-            formB.save_m2m()
+            managerForm.save_m2m()
             address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
     else:
-        formA = CreateDevInviteForm()
-        formB = CreateManagerInviteForm()
-    return render(request, 'SendInvite.html',{'formA':formA,'formB':formB})
+        devForm = CreateInviteForm(prefix='dev',set=dev_queryset)
+        managerForm = CreateInviteForm(prefix='manager',set=manager_queryset)
+    return render(request, 'SendInvite.html',{'devForm':devForm,'managerForm':managerForm})
 
 
 def BringPbiToSprint(request,projectID,target):
     sprints=Sprint.objects.filter(project=projectID)
     pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
     for s in sprints:
-        if s.is_current == True:
+        if s.is_active == True and s.teamID==pbi.teamID:
             allCPbi=s.pbi_set.all()
             for p in allCPbi:
                 if p==pbi:
@@ -504,14 +719,14 @@ def BringPbiToSprint(request,projectID,target):
             pbi.sprints.add(s)
             address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
-    messages.info(request, 'No Current Sprint')
+    messages.info(request, 'No Active Sprint')
     return HttpResponseRedirect('/'+projectID+'/main/'+'pbi/'+target)
 
 def RemoveCurrentPbi(request, projectID,target):
     sprints=Sprint.objects.filter(project=projectID)
     pbi=Pbi.objects.filter(projectID=projectID).get(title=target)
     for s in sprints:
-        if s.is_current == True:
+        if s.is_active == True:
             pbi.sprints.remove(s)
             address='/'+str(projectID)+'/main'
             return HttpResponseRedirect(address)
@@ -523,6 +738,7 @@ def redir(request):
     isDev = currentUser.is_devteam
     isProdOwn = currentUser.is_prodowner
     if (isManager):
+        messages.info(request, 'You are a Manager!')
         return redirect('/projects')
     elif (isDev):
         if (currentUser.devteammember.project == None):

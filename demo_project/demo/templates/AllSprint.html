@@ -22,6 +22,9 @@
               <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
             {% endif %} -->
         </header>
+        {% if devteam == False %}
+          <p>You are viewing the sprintbacklog of team: {{sprintView}}</p>
+        {% endif %}
         {% if devteam == True %}
         <p>Your Total Estimated Effort Hours: {{sumEHour}}hr</p>
         <p>Your Total Acutal Effort Hours: {{sumAHour}}hr</p>

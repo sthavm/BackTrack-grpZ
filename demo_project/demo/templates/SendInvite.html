@@ -26,14 +26,16 @@
 
 
 <form method="POST" action="">
-    <h3 style="font-family:Arial, sans-serif; color:black;">Send Project Collaboration Invites To Developers And Mangers</h3>
+    <h3 style="font-family:Arial, sans-serif; color:black;">Send Project Collaboration Invites To Developers And Managers</h3>
     <hr>
     {% csrf_token %}
+    <h2>Invite Developers</h2>
     <table border="1">
-        {{ formA }}
+        {{ devForm}}
     </table>
+    <h2>Invite Managers</h2>
     <table border="1">
-        {{ formB }}
+        {{ managerForm }}
     </table>
     <br>
     <input class="button" type="submit" value="Save"><br><br>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <link rel="stylesheet" href="{% static 'createpbi.css' %}",type="text/css">
+    <title>Change Team</title>
+</head>
+<body style="background-image: linear-gradient(to left, #ffffff 50%, #010c4d 50%)">
+<form method="POST" action="">
+  <h3 style="font-family:Arial, sans-serif; color:black;">Change Team By Inputting Team ID</h3>
+  <hr>
+  <br>
+  {% csrf_token %}
+  <table border="1">
+    {{ form }}
+  </table>
+  <br>
+  <input class="button" type="submit" value="Save"><br><br>
+  <input class="button" type="button" onclick="location.href='.'"" value="Back"><br><br>
+</form>
+</html>

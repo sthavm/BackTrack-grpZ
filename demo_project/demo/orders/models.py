@@ -12,6 +12,7 @@ class Project(models.Model):
     title=models.CharField(max_length=200)
     description = models.CharField(max_length=2000)
 
+
 class User(AbstractUser):
     is_manager = models.BooleanField('manager status', default=False)
     is_prodowner = models.BooleanField('product owner status', default=False)
@@ -23,16 +24,20 @@ class User(AbstractUser):
 class ProductOwner(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     project = models.OneToOneField(Project,on_delete=models.SET_NULL, null=True)
+    sprintView =models.CharField(max_length=2, default='A')
 
 class DevTeamMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
+    teamID =models.CharField(max_length=2, default='A')
 
 class Manager(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     project= models.ManyToManyField(Project)
+    sprintView =models.CharField(max_length=2, default='A')
 
 class Sprint(models.Model):
+    teamID=models.CharField(max_length=2)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     sprintNumber=models.IntegerField(validators=[MinValueValidator(0)])
     startDate = models.DateField(null=True, blank=True)
@@ -70,17 +75,18 @@ class Sprint(models.Model):
 
 class Pbi(models.Model):
     STATUS_CHOICES=[
-        ('Not Started','Not Started'),
-        ('In Progress','In Progress'),
+        ('Not Started(*)','Not Started(*)'),
+        ('In Progress(*)','In Progress(*)'),
         ('Completed','Completed')
     ]
     title=models.CharField(max_length=200)
     projectID=models.ForeignKey(Project, on_delete=models.CASCADE)
     sprints=models.ManyToManyField(Sprint,blank=True)
-    status=models.CharField(choices=STATUS_CHOICES, max_length=20, default='Not Started')
+    status=models.CharField(choices=STATUS_CHOICES, max_length=20, default='Not Started(*)')
     description=models.CharField(max_length=2000)
     priority=models.DecimalField(max_digits=4,decimal_places=0)
     storyPt=models.DecimalField(max_digits=2,decimal_places=0)
+    teamID=models.CharField(max_length=2,default='A')
     class Meta:
         unique_together = (("title", "projectID"),)
     def __str__(self):
@@ -105,14 +111,7 @@ class Task(models.Model):
         unique_together = (("title", "pbi"),)
 
 class InviteMessage(models.Model):
-    receiver=models.ManyToManyField(User)
-    project=models.OneToOneField(Project,on_delete=models.CASCADE, primary_key=True)
+    receiver=models.ManyToManyField(User,blank = True)
+    project=models.ForeignKey(Project,on_delete=models.CASCADE)
     def __str__(self):
         return str(self.project.projectID)
-
-# class Sprint_Pbi(models.Model):
-#     sprint=models.ForeignKey(Sprint, on_delete=models.CASCADE)
-#     project=models.ForeignKey(Project, on_delete=models.CASCADE)
-#     pbi=models.ForeignKey(Pbi, on_delete=models.CASCADE)
-#     class Meta:
-#         unique_together = (("project","sprint", "pbi"),)

@@ -29,6 +29,7 @@
                 <div class="tm-blue-bg tm-left-column">
                     <div class="tm-logo-div text-xs-center">
                         <h1 class="tm-site-name">PENDRAGON</h1>
+                        <p>Welcome! {{userID}}<p>
                     </div>
                     <nav class="tm-main-nav">
                         <ul class="tm-main-nav-ul">
@@ -50,6 +51,9 @@
                             <header>
                                 <h1 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project: {{project.title}}</h1>
                                 <p>Description: {{project.description}}<p>
+                                {% if devteam %}
+                                <p>You are in Team: {{teamID}} <input class="button" type="button" onclick="location.href='./changeteam'" value="Change"> </P>
+                                {% endif %}
                             </header>
                             <form>
                                 <h2 class="tm-blue-text tm-section-title tm-margin-b-45">Product Backlog</h2>
@@ -58,8 +62,8 @@
                                 <select id="mylist" onchange="myFunction()" class='form-control'>
                                     <option selected></option>
                                     <option>Completed</option>
-                                    <option>In Progress</option>
-                                    <option>Not Started</option>
+                                    <option value="(*)">Not Completed</option>
+
                                 </select>
                                 <br>
                                 <table id="pbitable" width=100% border="1">
@@ -88,9 +92,9 @@
 
                                 </table>
                                 <br>
-                                {% if prodowner == True %}
+
                                 <input class="button" type="button" onclick="location.href='./createPbi'" value="Create"><br><br>
-                                {% endif %}
+
                             </form>
                         </section>
 
@@ -101,78 +105,75 @@
                             <div class="row">
                                 <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12 push-lg-4 push-md-5">
                                     <header>
+
                                         <h2 class="tm-blue-text tm-welcome-title tm-margin-b-45">Current Sprint</h2>
+                                        {% if devteam == False %}
+                                          <p>You are viewing the sprintbacklog of team: {{sprintView}}<input class="button" type="button" onclick="location.href='./changeview'" value="Change"></p>
+                                        {% endif %}
                                         {% if currentSprint.sprintNumber == null %}
-                                            <p>No Active Sprint<p>
+                                        <p>No Active Sprint<p>
                                         {% else %}
-                                            <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
-                                            {% if currentSprint.is_active == False %}
-                                                <p>Sprint Not Yet Started<p>
-                                            {% else %}
-                                                <p>Start Date: {{currentSprint.startDate}}<p>
-                                                <p>End Date: {{currentSprint.endDate}}<p>
-                                            {% endif %}
-                                            <p>Total Effort Hours: {{currentSprint.totalEffortHours}}<p>
+                                        <p>Sprint Number: {{currentSprint.sprintNumber}}<p>
                                         {% endif %}
                                         {% if devteam == True %}
-                                            <p>Your Estimated Effort Hours In This Sprint: {{sumEHour}}hr</p>
-                                            <p>Your Actual Effort Hours In This Sprint: {{sumAHour}}hr</p>
+                                        <p>Your Estimated Effort Hours In This Sprint: {{sumEHour}}hr</p>
+                                        <p>Your Acutal Effort Hours In This Sprint: {{sumAHour}}hr</p>
                                         {% endif %}
                                     </header>
                                     <div id="wrapper">
-                                        <div id="grpChkBox">
-                                            <input type="checkbox" name="fin" checked="checked">Completed </input> <label>&nbsp;</label>
-                                            <input type="checkbox" name="not" checked="checked">Not Completed </input> <label>&nbsp;</label>
-                                        </div>
-                                        <table id="table" border="1" width=150%>
-                                            <thead>
-                                                <tr class="tr_header">
-                                                    <th>PBI</th>
-                                                    <th class="fin">Finished</th>
-                                                    <th class="not">In Progress</th>
-                                                    <th class="not">Not Started</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for p in currentPbiList %}
-                                                <tr>
-                                                    <td><a class="btn btn-primary" href="./currentpbi/{{p.title}}">{{p.title}}</a></td>
-                                                    <td class="fin">
-                                                        {% for t in taskDone %}
-                                                        {% if t.pbi == p %}
-
-                                                        <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
-
-                                                        {% endif %}
-                                                        {% endfor %}
-                                                    </td>
-                                                    <td class="not">
-                                                        {% for t in taskProgress %}
-                                                        {% if t.pbi == p %}
-
-                                                        <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
-
-                                                        {% endif %}
-                                                        {% endfor %}
-                                                    </td>
-                                                    <td class="not">
-                                                        {% for t in taskNot %}
-                                                        {% if t.pbi == p %}
-                                                        <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
-                                                        {% endif %}
-                                                        {% endfor %}
-                                                    </td>
-                                                </tr>
-                                                {% empty %}
-                                                <tr>
-                                                    <td colspan="4">No PBI is added.</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
+                                    <div id="grpChkBox">
+                                      <input type="checkbox" name="fin" checked="checked">Completed </input> <label>&nbsp;</label>
+                                      <input type="checkbox" name="not" checked="checked">Not Completed </input> <label>&nbsp;</label>
                                     </div>
+                                    <table id="table" border="1" width=150%>
+                                      <thead>
+                                        <tr class="tr_header">
+                                          <th>PBI</th>
+                                          <th class="fin">Finished</th>
+                                          <th class="not">In Progress</th>
+                                          <th class="not">Not Started</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {% for p in currentPbiList %}
+                                        <tr>
+                                            <td><a class="btn btn-primary" href="./currentpbi/{{p.title}}">{{p.title}}</a></td>
+                                            <td class="fin">
+                                                {% for t in taskDone %}
+                                                {% if t.pbi == p %}
+
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
+
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td class="not">
+                                                {% for t in taskProgress %}
+                                                {% if t.pbi == p %}
+
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
+
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td class="not">
+                                                {% for t in taskNot %}
+                                                {% if t.pbi == p %}
+                                                <a class="btn btn-primary" href="./{{p.title}}/task/{{t.title}}">{{t.title}}</a>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4">No PBI is added.</td>
+                                        </tr>
+                                        {% endfor %}
+                                      </tbody>
+                                    </table>
+                                  </div>
                                     <br>
-                                    {% if prodowner == True %}
+                                    {% if devteam == True %}
                                         {% if hasCurrentSprint == True %}
                                             {% if hasActiveSprint == True %}
                                                 <input class="button" type="button" onclick="location.href='./end-sprint-landing'" value="End Sprint">
@@ -185,8 +186,7 @@
                                             <input class="button" type="button" onclick="location.href='./createSprintLanding'" value="Create Sprint">
                                         {% endif %}
                                     {% endif %}
-               
-                                    <input class="button" type="button" onclick="location.href='./AllSprint'" value="View All Sprints">
+                                    <input class="button" type="button" onclick="location.href='./AllSprint'" value="View All Sprint">
 
                                 </div>
 
@@ -201,10 +201,108 @@
                         <!-- Collaborators Section-->
                         {% if prodowner == True %}
                         <section id="collabsection" class="tm-section">
-                            <input class="button" type="button" onclick="location.href='./create-invite'" value="Add Developers to this Project" />
+                            <input class="button" type="button" onclick="location.href='./create-invite'" value="Invite Developers and Managers to this Project" />
                         </section>
                         {% endif %}
+                        
+        
+                        <br>
+                        <!-- Project metrics section -->
+                        <section id="metrics" class="tm-section">
+                            <header>
+                                <h3 class="tm-blue-text tm-welcome-title tm-margin-b-45">Project Metrics</h3>
+                            </header>
+                            <p>Velocity of current sprint<p>
+                            <table id="table" border="1" width=100%>
+                                <thead>
+                                    <tr class="tr_header">
+                                        <th>Sprint</th>
+                                        <th>Velocity</th>
+                                    </tr>
+                                </thead>
+                                <tr>
+                                    <td>{{currentSprint.sprintNumber}}</td>
+                                    
+                                    <td>  &emsp;effort hours / days</td>
+                                </tr>
+                            </table>
+                                
+                            <br>    
+                            <p>Sprint Burndown<p>
+                            <table id="table" border="1" width=100%>
+                                <thead>
+                                    <tr class="tr_header">
+                                         <th>Tasks</th>
+                                         <th colspan={{currentSprint.durationInDays}}>Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for t in taskDone %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+                                        
+                                    </tr>
+                                    {% endfor %}
+                                    {% for t in taskProgress %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+                                        
+                                    </tr>
+                                    {% endfor %}
+                                    {% for t in taskNot %}
+                                    <tr>
+                                        <td>{{t.title}}</td>
+                                        
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                            <br>
+                            <p>Effort Hours Spent<p>
+                            <table id="table" border="1" width=100%>
+                                      <thead>
+                                        <tr class="tr_header">
+                                            <th>Tasks</th>
+                                            <th>Effort Hours Spent</th>
+                                            <th>Estimated Effort Hours</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        
+                                       
+                                    {% for t in taskDone %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        </tr>
+                                    {% endfor %} 
+                                        
+                                        
+                                    {% for t in taskProgress %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        <tr>
+                                    {% endfor %}  
+                                        
+                                        
+                                    {% for t in taskNot %}
+                                        <tr>
+                                            <td>{{t.title}}</td>
+                                            <td>{{t.hourSpent}}</td>
+                                            <td>{{t.effortHours}}</td>
+                                        </tr>
+                                    {% endfor %}  
+                                        
+                                      </tbody>
+                                    </table>
 
+                        </section>
+        
+        
                         <!-- Logout-->
                         <section id="logout" class="tm-section">
                             <input class="button" type="button" onclick="location.href='/logout'" value="Logout" />

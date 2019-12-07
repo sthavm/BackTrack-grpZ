@@ -1,6 +1,15 @@
 ﻿
 <!doctype html>
 {% load staticfiles %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <script>
+    alert('{{message}}')
+    </script>
+    {% endfor %}
+</ul>
+{% endif %}
 <html>
 <head>
     <meta charset="utf-8">
@@ -25,20 +34,26 @@
                         <span>Manager</span>
                         <div class="primary-button">
                             <br>
-                            <h4>Assigned Projects: </h4>
+                            <p>Projects</p>
                             <ul>
                                 {% for p in project %}
-                                <li><a class="btn btn-primary" href="{{ p.projectID }}/main">{{p.title}}</a></li>
+                                <li><a class="btn btn-primary" href="{{project.projectID}}/main">{{p.title}}</a></li>
                                 {% empty %}
-                                <li>You have not been assigned any projects</li>
+                                <li>You Do Not have Any Project</li>
                                 {% endfor %}
+                                <h3>You have invitations to collaborate on the following projects:</h3>
+                                <ul>
+                                    {% for invite in invites %}
+                                    <li>{{invite.project.projectID}} : {{invite.project.title}}<br><input class="button" type="button" onclick="location.href='/{{invite.project.projectID}}/accept-invite-landing/'" value="Accept Invite" /></li>
+                                    {% endfor %}
+                                </ul>
+                                <input class="button" type="button" onclick="location.href='/logout'" value="Logout" />
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-            <input class="btn btn-primary" type="button" onclick="location.href='/logout'" value="Logout" />
         </div>
     </section>
 
-</html>
+    </html>

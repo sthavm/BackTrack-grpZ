@@ -4,6 +4,19 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms.widgets import CheckboxSelectMultiple
 from .models import *
 
+class TeamForm(ModelForm):
+    class Meta:
+        model=DevTeamMember
+        exclude=['user','project']
+class ManagerViewForm(ModelForm):
+    class Meta:
+        model=Manager
+        exclude=['user','project']
+class ProductOwnerViewForm(ModelForm):
+    class Meta:
+        model=ProductOwner
+        exclude=['user','project']
+
 class PbiCreateForm(ModelForm):
     class Meta:
         model = Pbi
@@ -26,7 +39,7 @@ class CreateProjectForm(ModelForm):
 class CreateSprintForm(ModelForm):
     class Meta:
         model = Sprint
-        exclude = ['startDate','endDate','is_active','project','sprintNumber','is_completed','is_current']
+        exclude = ['startDate','endDate','is_active','project','sprintNumber','is_completed','is_current','teamID']
 
 class CreateTaskForm(ModelForm):
     class Meta:
@@ -44,25 +57,15 @@ class ManagerSignUpForm(UserCreationForm):
         manager= Manager.objects.create(user=user)
         return user
 
-class CreateDevInviteForm(ModelForm):
-    idleDevs=DevTeamMember.objects.filter(project=None)
+class CreateInviteForm(ModelForm):
     class Meta:
         model=InviteMessage
         fields=['receiver']
     def __init__(self,*args,**kwargs):
-        super(CreateDevInviteForm,self).__init__(*args,**kwargs)
+        set = kwargs.pop('set', None)
+        super(CreateInviteForm,self).__init__(*args,**kwargs)
         self.fields['receiver'].widget = CheckboxSelectMultiple()
-        self.fields['receiver'].queryset=User.objects.filter(devteammember__in=self.idleDevs)
-
-class CreateManagerInviteForm(ModelForm):
-    class Meta:
-        model=InviteMessage
-        fields=['receiver']
-    def __init__(self,*args,**kwargs):
-        manList = kwargs.pop('manList',None)
-        super(CreateManagerInviteForm,self).__init__(*args,**kwargs)
-        self.fields['receiver'].widget = CheckboxSelectMultiple()
-        self.fields['receiver'].queryset=User.objects.filter(manager__in=manList)
+        self.fields['receiver'].queryset = set
 
 class DevSignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
